@@ -1,0 +1,158 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import MediaGrid from '../components/MediaGrid.svelte';
+import { getAllMedia, getCollections } from '../lib/db-static';
+
+const media = getAllMedia();
+const collections = getCollections();
+---
+
+<BaseLayout title="Archive — Digital Home">
+  <div class="container-wide">
+    <header class="page-header">
+      <h1 class="page-title">Visual Archive</h1>
+      <p class="page-description">
+        Moments captured and preserved. A living collection of images, 
+        organized not by algorithm but by intention.
+      </p>
+    </header>
+
+    {collections.length > 0 && (
+      <section class="collections">
+        <h2 class="collections-title">Collections</h2>
+        <div class="collections-grid">
+          {collections.map((collection) => (
+            <a href={`/archive/${collection.slug}`} class="collection-card">
+              <div class="collection-inner">
+                {collection.cover_image_url && (
+                  <img 
+                    src={collection.cover_image_url} 
+                    alt={collection.title}
+                    class="collection-cover"
+                  />
+                )}
+                <h3 class="collection-title">{collection.title}</h3>
+                <p class="collection-description">{collection.description}</p>
+              </div>
+              <div class="collection-accent" aria-hidden="true"></div>
+            </a>
+          ))}
+        </div>
+      </section>
+    )}
+
+    <section class="all-media">
+      <h2 class="section-title">All Media</h2>
+      {media.length > 0 ? (
+        <MediaGrid media={media} client:visible />
+      ) : (
+        <p class="empty-state">No media yet. Start building your archive.</p>
+      )}
+    </section>
+  </div>
+</BaseLayout>
+
+<style>
+  .page-header {
+    margin-bottom: var(--space-xl);
+    text-align: center;
+    padding: var(--space-lg) 0;
+  }
+
+  .page-title {
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    margin-bottom: var(--space-sm);
+  }
+
+  .page-description {
+    font-size: 1.125rem;
+    color: var(--color-stone);
+    max-width: 42rem;
+    margin: 0 auto;
+    line-height: 1.7;
+  }
+
+  .collections {
+    margin-bottom: var(--space-xl);
+  }
+
+  .collections-title {
+    font-size: 1.5rem;
+    margin-bottom: var(--space-md);
+    padding-bottom: var(--space-sm);
+    border-bottom: 2px solid var(--color-sand);
+  }
+
+  .collections-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: var(--space-md);
+  }
+
+  .collection-card {
+    position: relative;
+    display: block;
+    text-decoration: none;
+    transition: transform 0.3s var(--ease-editorial);
+  }
+
+  .collection-card:hover {
+    transform: translateY(-6px) rotate(-0.5deg);
+  }
+
+  .collection-inner {
+    position: relative;
+    padding: var(--space-md);
+    background: white;
+    border: 2px solid var(--color-sand);
+    z-index: 1;
+  }
+
+  .collection-cover {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    margin-bottom: var(--space-sm);
+  }
+
+  .collection-title {
+    font-size: 1.25rem;
+    margin-bottom: 0.5rem;
+    color: var(--color-deep);
+  }
+
+  .collection-description {
+    font-size: 0.875rem;
+    color: var(--color-stone);
+    line-height: 1.5;
+    margin: 0;
+  }
+
+  .collection-accent {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    right: -8px;
+    bottom: -8px;
+    background: var(--color-sand);
+    border: 2px solid var(--color-dune);
+    z-index: 0;
+  }
+
+  .section-title {
+    font-size: 1.5rem;
+    margin-bottom: var(--space-md);
+    padding-bottom: var(--space-sm);
+    border-bottom: 2px solid var(--color-sand);
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: var(--space-xl);
+    font-family: var(--font-mono);
+    color: var(--color-stone);
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+</style>
