@@ -1,0 +1,324 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PhotoGallery from '../../components/PhotoGallery.svelte';
+import { getTripBySlug, getTripPhotos, getTripStats, getTrips } from '../../lib/photography-static';
+
+export async function getStaticPaths() {
+  const trips = getTrips();
+  return trips.map(trip => ({
+    params: { slug: trip.slug }
+  }));
+}
+
+const { slug } = Astro.params;
+const trip = getTripBySlug(slug);
+
+if (!trip) {
+  return Astro.redirect('/404');
+}
+
+const photos = getTripPhotos(trip.id);
+const stats = getTripStats(trip.id);
+---
+
+<BaseLayout title={`${trip.title} — Adventures`}>
+  <article class="trip-detail">
+    <!-- Hero Section -->
+    <header class="trip-hero">
+      {trip.cover_image_url && (
+        <div class="hero-image">
+          <img src={trip.cover_image_url} alt={trip.title} />
+        </div>
+      )}
+      <div class="hero-content">
+        <div class="hero-text">
+          <span class="trip-location-tag">{trip.location}</span>
+          <h1 class="trip-title">{trip.title}</h1>
+          {trip.start_date && (
+            <div class="trip-dates">
+              <time datetime={trip.start_date}>
+                {new Date(trip.start_date).toLocaleDateString('en-AU', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric'
+                })}
+              </time>
+              {trip.end_date && (
+                <>
+                  <span> — </span>
+                  <time datetime={trip.end_date}>
+                    {new Date(trip.end_date).toLocaleDateString('en-AU', {
+                      month: 'long',
+                      day: 'numeric'
+                    })}
+                  </time>
+                </>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    </header>
+
+    <div class="container-wide">
+      <!-- Description -->
+      {trip.description && (
+        <section class="trip-description">
+          <p>{trip.description}</p>
+        </section>
+      )}
+
+      <!-- Trip Stats -->
+      {stats.photoCount > 0 && (
+        <section class="trip-stats">
+          <div class="stat-card">
+            <span class="stat-number">{stats.photoCount}</span>
+            <span class="stat-label">Photos</span>
+          </div>
+          
+          {stats.cameras.length > 0 && (
+            <div class="stat-card">
+              <span class="stat-label">Shot with</span>
+              <div class="camera-list">
+                {stats.cameras.map(cam => (
+                  <span class="camera-name">
+                    {cam.camera}
+                    {cam.count > 1 && <span class="camera-count">×{cam.count}</span>}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+        </section>
+      )}
+
+      <!-- Photo Gallery -->
+      {photos.length > 0 ? (
+        <section class="photos-section">
+          <PhotoGallery photos={photos} client:visible />
+        </section>
+      ) : (
+        <div class="no-photos">
+          <p>No photos added to this adventure yet.</p>
+        </div>
+      )}
+
+      <!-- Back Navigation -->
+      <footer class="trip-footer">
+        <a href="/adventures" class="back-link">← Back to Adventures</a>
+      </footer>
+    </div>
+  </article>
+</BaseLayout>
+
+<style>
+  .trip-detail {
+    padding-bottom: var(--space-xl);
+  }
+
+  /* Hero Section */
+  .trip-hero {
+    position: relative;
+    height: 60vh;
+    min-height: 500px;
+    margin-bottom: var(--space-xl);
+    overflow: hidden;
+  }
+
+  .hero-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .hero-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: brightness(0.7);
+  }
+
+  .hero-content {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: var(--space-xl) var(--space-md);
+    background: linear-gradient(to top, rgba(44, 74, 82, 0.95), transparent);
+  }
+
+  .hero-text {
+    max-width: 72rem;
+    margin: 0 auto;
+  }
+
+  .trip-location-tag {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    background: var(--color-sand);
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--color-deep);
+    margin-bottom: var(--space-sm);
+  }
+
+  .trip-title {
+    font-size: clamp(2rem, 5vw, 4rem);
+    color: white;
+    margin-bottom: var(--space-sm);
+    line-height: 1.1;
+  }
+
+  .trip-dates {
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--color-sand);
+  }
+
+  /* Description */
+  .trip-description {
+    max-width: 48rem;
+    margin: 0 auto var(--space-xl);
+    padding: 0 var(--space-md);
+  }
+
+  .trip-description p {
+    font-size: 1.25rem;
+    line-height: 1.7;
+    color: var(--color-deep);
+    text-align: center;
+  }
+
+  /* Stats */
+  .trip-stats {
+    display: flex;
+    justify-content: center;
+    gap: var(--space-md);
+    margin-bottom: var(--space-xl);
+    padding: 0 var(--space-md);
+    flex-wrap: wrap;
+  }
+
+  .stat-card {
+    padding: var(--space-md);
+    background: white;
+    border: 2px solid var(--color-sand);
+    text-align: center;
+    min-width: 200px;
+  }
+
+  .stat-number {
+    display: block;
+    font-family: var(--font-display);
+    font-size: 3rem;
+    font-weight: 600;
+    color: var(--color-ocean);
+    margin-bottom: 0.25rem;
+  }
+
+  .stat-label {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--color-stone);
+    margin-bottom: 0.5rem;
+  }
+
+  .camera-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-top: var(--space-sm);
+  }
+
+  .camera-name {
+    font-family: var(--font-body);
+    font-size: 0.875rem;
+    color: var(--color-deep);
+  }
+
+  .camera-count {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--color-stone);
+    margin-left: 0.5rem;
+  }
+
+  /* Photos Section */
+  .photos-section {
+    margin-bottom: var(--space-xl);
+  }
+
+  .no-photos {
+    text-align: center;
+    padding: var(--space-xl);
+  }
+
+  .no-photos p {
+    font-family: var(--font-mono);
+    color: var(--color-stone);
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  /* Footer */
+  .trip-footer {
+    text-align: center;
+    padding: var(--space-xl) 0;
+    border-top: 1px solid var(--color-sand);
+    margin-top: var(--space-xl);
+  }
+
+  .back-link {
+    font-family: var(--font-display);
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--color-stone);
+    text-decoration: none;
+    padding: 0.75rem 1.5rem;
+    border: 2px solid var(--color-sand);
+    display: inline-block;
+    transition: all 0.2s var(--ease-editorial);
+  }
+
+  .back-link:hover {
+    background: var(--color-sand);
+    color: var(--color-deep);
+    transform: translateY(-2px);
+  }
+
+  @media (max-width: 768px) {
+    .trip-hero {
+      height: 50vh;
+      min-height: 400px;
+    }
+
+    .hero-content {
+      padding: var(--space-md) var(--space-sm);
+    }
+
+    .trip-description p {
+      font-size: 1.125rem;
+    }
+
+    .trip-stats {
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .stat-card {
+      width: 100%;
+      max-width: 300px;
+    }
+  }
+</style>

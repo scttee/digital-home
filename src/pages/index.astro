@@ -1,0 +1,101 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ThoughtCard from '../components/ThoughtCard.svelte';
+import { getThoughts, getProfile } from '../lib/db-static';
+
+const profile = getProfile();
+const thoughts = getThoughts(10);
+---
+
+<BaseLayout title="Home — Digital Home">
+  <div class="container-narrow">
+    <section class="hero">
+      <h1 class="hero-title">
+        {profile?.username || 'Welcome'}
+      </h1>
+      <p class="hero-bio">
+        {profile?.bio || 'A personal digital home'}
+      </p>
+    </section>
+
+    <section class="feed stagger-fade">
+      <h2 class="section-title">Recent Thoughts</h2>
+      {thoughts.map((thought) => (
+        <ThoughtCard 
+          content={thought.content}
+          timestamp={thought.created_at}
+          tags={thought.tags}
+          client:visible
+        />
+      ))}
+    </section>
+
+    <section class="cta">
+      <a href="/thoughts" class="btn">View All Thoughts</a>
+    </section>
+  </div>
+</BaseLayout>
+
+<style>
+  .hero {
+    margin-bottom: var(--space-xl);
+    text-align: center;
+    padding: var(--space-lg) 0;
+  }
+
+  .hero-title {
+    font-size: clamp(2.5rem, 6vw, 5rem);
+    margin-bottom: var(--space-sm);
+    background: linear-gradient(135deg, var(--color-ocean), var(--color-deep));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: fadeInUp 0.8s var(--ease-editorial) backwards;
+  }
+
+  .hero-bio {
+    font-size: 1.25rem;
+    color: var(--color-stone);
+    max-width: 32rem;
+    margin: 0 auto;
+    animation: fadeInUp 0.8s var(--ease-editorial) 0.2s backwards;
+  }
+
+  .section-title {
+    font-size: 1.5rem;
+    margin-bottom: var(--space-md);
+    padding-bottom: var(--space-sm);
+    border-bottom: 2px solid var(--color-sand);
+    position: relative;
+  }
+
+  .section-title::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 80px;
+    height: 2px;
+    background: var(--color-ocean);
+  }
+
+  .feed {
+    margin-bottom: var(--space-xl);
+  }
+
+  .cta {
+    text-align: center;
+    margin: var(--space-xl) 0;
+  }
+
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+</style>

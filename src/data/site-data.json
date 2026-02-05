@@ -1,0 +1,17 @@
+{
+  "profile": {
+    "id": 1,
+    "username": "home",
+    "bio": "A personal digital space, owned and curated by me.",
+    "avatar_url": "/images/avatar.jpg",
+    "theme_preference": "coastal",
+    "created_at": "2025-02-05T00:00:00.000Z"
+  },
+  "thoughts": [],
+  "media": [],
+  "collections": [],
+  "stories": [],
+  "storyPages": [],
+  "trips": [],
+  "tripPhotos": []
+}

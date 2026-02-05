@@ -1,0 +1,323 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getStoryBySlug, getStoryPages, getStories } from '../../lib/db-static';
+
+export async function getStaticPaths() {
+  const stories = getStories();
+  return stories.map(story => ({
+    params: { slug: story.slug }
+  }));
+}
+
+const { slug } = Astro.params;
+const story = getStoryBySlug(slug);
+
+if (!story) {
+  return Astro.redirect('/404');
+}
+
+const pages = getStoryPages(story.id);
+---
+
+<BaseLayout title={`${story.title} — Digital Home`}>
+  <article class="story">
+    <header class="story-header">
+      <h1 class="story-title">{story.title}</h1>
+      {story.published_at && (
+        <time class="story-date">
+          {new Date(story.published_at).toLocaleDateString('en-AU', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+          })}
+        </time>
+      )}
+    </header>
+
+    <div class="story-pages">
+      {pages.map((page, index) => {
+        const content = JSON.parse(page.content);
+        
+        return (
+          <section 
+            class={`story-page layout-${page.layout_type}`}
+            data-page={page.page_number}
+            style={`animation-delay: ${index * 0.2}s`}
+          >
+            {page.layout_type === 'full-bleed' && (
+              <div class="full-bleed-layout">
+                {content.image && (
+                  <div class="page-image">
+                    <img src={content.image} alt="" />
+                  </div>
+                )}
+                {content.text && (
+                  <div class="page-text">
+                    <h2>{content.text}</h2>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {page.layout_type === 'text-only' && (
+              <div class="text-only-layout">
+                <div class="text-content">
+                  <p>{content.text}</p>
+                </div>
+              </div>
+            )}
+
+            {page.layout_type === 'split' && (
+              <div class="split-layout">
+                <div class="split-text">
+                  <p>{content.text}</p>
+                </div>
+                {content.image && (
+                  <div class="split-image">
+                    <img src={content.image} alt="" />
+                  </div>
+                )}
+              </div>
+            )}
+
+            {page.layout_type === 'gallery' && (
+              <div class="gallery-layout">
+                {content.images?.map((img) => (
+                  <div class="gallery-item">
+                    <img src={img} alt="" />
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
+        );
+      })}
+    </div>
+
+    <footer class="story-footer">
+      <a href="/stories" class="back-link">← Back to Stories</a>
+    </footer>
+  </article>
+</BaseLayout>
+
+<style>
+  .story {
+    max-width: 56rem;
+    margin: 0 auto;
+    padding: 0 var(--space-md);
+  }
+
+  .story-header {
+    text-align: center;
+    padding: var(--space-xl) 0;
+    margin-bottom: var(--space-xl);
+    border-bottom: 3px solid var(--color-sand);
+  }
+
+  .story-title {
+    font-size: clamp(2rem, 5vw, 4rem);
+    margin-bottom: var(--space-sm);
+    line-height: 1.1;
+  }
+
+  .story-date {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--color-stone);
+  }
+
+  .story-pages {
+    margin-bottom: var(--space-xl);
+  }
+
+  .story-page {
+    margin-bottom: var(--space-xl);
+    animation: fadeInUp 0.8s var(--ease-editorial) backwards;
+  }
+
+  /* Full Bleed Layout */
+  .full-bleed-layout {
+    position: relative;
+    min-height: 60vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--color-sand);
+    padding: var(--space-lg);
+    border: 3px solid var(--color-dune);
+  }
+
+  .full-bleed-layout .page-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0.3;
+  }
+
+  .full-bleed-layout .page-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .full-bleed-layout .page-text {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+  }
+
+  .full-bleed-layout h2 {
+    font-size: clamp(2rem, 4vw, 3.5rem);
+    color: var(--color-deep);
+    text-shadow: 2px 2px 0 rgba(255, 255, 255, 0.5);
+  }
+
+  /* Text Only Layout */
+  .text-only-layout {
+    padding: var(--space-lg);
+    background: white;
+    border: 2px solid var(--color-sand);
+    position: relative;
+  }
+
+  .text-only-layout::before {
+    content: '';
+    position: absolute;
+    top: -8px;
+    left: -8px;
+    right: 8px;
+    bottom: 8px;
+    border: 2px solid var(--color-dune);
+    pointer-events: none;
+  }
+
+  .text-content {
+    max-width: 36rem;
+    margin: 0 auto;
+  }
+
+  .text-content p {
+    font-size: 1.5rem;
+    line-height: 1.7;
+    color: var(--color-deep);
+    text-align: center;
+    font-style: italic;
+  }
+
+  /* Split Layout */
+  .split-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-md);
+    min-height: 50vh;
+  }
+
+  .split-text {
+    display: flex;
+    align-items: center;
+    padding: var(--space-lg);
+    background: white;
+    border: 2px solid var(--color-sand);
+  }
+
+  .split-text p {
+    font-size: 1.25rem;
+    line-height: 1.7;
+    color: var(--color-deep);
+  }
+
+  .split-image {
+    border: 3px solid var(--color-dune);
+    overflow: hidden;
+  }
+
+  .split-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  /* Gallery Layout */
+  .gallery-layout {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: var(--space-md);
+  }
+
+  .gallery-item {
+    border: 2px solid var(--color-sand);
+    padding: 8px;
+    background: white;
+    transform: rotate(-1deg);
+    transition: transform 0.3s var(--ease-editorial);
+  }
+
+  .gallery-item:nth-child(even) {
+    transform: rotate(1deg);
+  }
+
+  .gallery-item:hover {
+    transform: rotate(0deg) scale(1.02);
+  }
+
+  .gallery-item img {
+    width: 100%;
+    height: 300px;
+    object-fit: cover;
+  }
+
+  .story-footer {
+    text-align: center;
+    padding: var(--space-xl) 0;
+    border-top: 1px solid var(--color-sand);
+  }
+
+  .back-link {
+    font-family: var(--font-display);
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--color-stone);
+    text-decoration: none;
+    padding: 0.75rem 1.5rem;
+    border: 2px solid var(--color-sand);
+    display: inline-block;
+    transition: all 0.2s var(--ease-editorial);
+  }
+
+  .back-link:hover {
+    background: var(--color-sand);
+    color: var(--color-deep);
+    transform: translateY(-2px);
+  }
+
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(40px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @media (max-width: 768px) {
+    .split-layout {
+      grid-template-columns: 1fr;
+    }
+
+    .full-bleed-layout {
+      min-height: 40vh;
+      padding: var(--space-md);
+    }
+
+    .text-content p {
+      font-size: 1.25rem;
+    }
+  }
+</style>

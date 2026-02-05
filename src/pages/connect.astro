@@ -1,0 +1,260 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { getProfile } from '../lib/db-static';
+
+const profile = getProfile();
+---
+
+<BaseLayout title="Connect — Digital Home">
+  <div class="container-narrow">
+    <header class="page-header">
+      <h1 class="page-title">Connect</h1>
+      <p class="page-description">
+        This space is open for genuine connection. 
+        If something here resonates, reach out.
+      </p>
+    </header>
+
+    <section class="about-section">
+      <h2 class="section-title">About</h2>
+      <div class="about-content">
+        {profile?.avatar_url && (
+          <div class="profile-image">
+            <img src={profile.avatar_url} alt={profile.username} />
+          </div>
+        )}
+        <div class="profile-text">
+          <p class="bio">{profile?.bio}</p>
+          <p class="philosophy">
+            I believe in slow connection, intentional presence, and building 
+            things that last. This space exists outside the noise—a place 
+            for real conversation, shared curiosity, and authentic connection.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section class="interests-section">
+      <h2 class="section-title">What I'm Into</h2>
+      <div class="interests-grid">
+        <div class="interest-card">
+          <h3>Making</h3>
+          <p>Building things with intention. Design, code, writing. Craft over speed.</p>
+        </div>
+        <div class="interest-card">
+          <h3>Nature</h3>
+          <p>Coastal walks, changing light, the ocean's rhythm. Being outside.</p>
+        </div>
+        <div class="interest-card">
+          <h3>Ideas</h3>
+          <p>Systems thinking, regenerative approaches, digital sovereignty.</p>
+        </div>
+        <div class="interest-card">
+          <h3>Culture</h3>
+          <p>Editorial design, zines, independent publishing, analog aesthetics.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="contact-section">
+      <h2 class="section-title">Get in Touch</h2>
+      <form class="contact-form" method="post" action="/api/contact">
+        <div class="form-group">
+          <label for="name">Your Name</label>
+          <input 
+            type="text" 
+            id="name" 
+            name="name" 
+            required 
+            placeholder="What should I call you?"
+          />
+        </div>
+        
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input 
+            type="email" 
+            id="email" 
+            name="email" 
+            required 
+            placeholder="Where can I reach you?"
+          />
+        </div>
+        
+        <div class="form-group">
+          <label for="message">Message</label>
+          <textarea 
+            id="message" 
+            name="message" 
+            rows="6" 
+            required
+            placeholder="What's on your mind?"
+          ></textarea>
+        </div>
+        
+        <button type="submit" class="btn submit-btn">Send Message</button>
+      </form>
+    </section>
+  </div>
+</BaseLayout>
+
+<style>
+  .page-header {
+    margin-bottom: var(--space-xl);
+    text-align: center;
+    padding: var(--space-lg) 0;
+  }
+
+  .page-title {
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    margin-bottom: var(--space-sm);
+  }
+
+  .page-description {
+    font-size: 1.125rem;
+    color: var(--color-stone);
+    max-width: 36rem;
+    margin: 0 auto;
+    line-height: 1.7;
+  }
+
+  .about-section,
+  .interests-section,
+  .contact-section {
+    margin-bottom: var(--space-xl);
+  }
+
+  .section-title {
+    font-size: 1.5rem;
+    margin-bottom: var(--space-md);
+    padding-bottom: var(--space-sm);
+    border-bottom: 2px solid var(--color-sand);
+    position: relative;
+  }
+
+  .section-title::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 60px;
+    height: 2px;
+    background: var(--color-ocean);
+  }
+
+  .about-content {
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    gap: var(--space-md);
+    align-items: start;
+  }
+
+  .profile-image {
+    position: relative;
+  }
+
+  .profile-image img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    border: 3px solid var(--color-sand);
+    transform: rotate(-2deg);
+  }
+
+  .profile-text p {
+    font-size: 1.125rem;
+    line-height: 1.7;
+    margin-bottom: var(--space-sm);
+  }
+
+  .bio {
+    font-style: italic;
+    color: var(--color-stone);
+  }
+
+  .interests-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--space-md);
+  }
+
+  .interest-card {
+    padding: var(--space-md);
+    background: white;
+    border: 2px solid var(--color-sand);
+    transform: rotate(-0.5deg);
+    transition: transform 0.3s var(--ease-editorial);
+  }
+
+  .interest-card:hover {
+    transform: rotate(0deg) translateY(-4px);
+  }
+
+  .interest-card h3 {
+    font-size: 1.25rem;
+    margin-bottom: 0.5rem;
+    color: var(--color-ocean);
+  }
+
+  .interest-card p {
+    font-size: 0.875rem;
+    line-height: 1.5;
+    color: var(--color-stone);
+    margin: 0;
+  }
+
+  .contact-form {
+    max-width: 600px;
+  }
+
+  .form-group {
+    margin-bottom: var(--space-md);
+  }
+
+  .form-group label {
+    display: block;
+    font-family: var(--font-display);
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 0.5rem;
+    color: var(--color-stone);
+  }
+
+  .form-group input,
+  .form-group textarea {
+    width: 100%;
+    padding: var(--space-sm);
+    font-family: var(--font-body);
+    font-size: 1rem;
+    border: 2px solid var(--color-sand);
+    background: white;
+    color: var(--color-deep);
+    transition: border-color 0.2s var(--ease-editorial);
+  }
+
+  .form-group input:focus,
+  .form-group textarea:focus {
+    outline: none;
+    border-color: var(--color-ocean);
+  }
+
+  .form-group textarea {
+    resize: vertical;
+    min-height: 120px;
+  }
+
+  .submit-btn {
+    margin-top: var(--space-sm);
+  }
+
+  @media (max-width: 640px) {
+    .about-content {
+      grid-template-columns: 1fr;
+    }
+
+    .profile-image img {
+      height: 250px;
+    }
+  }
+</style>

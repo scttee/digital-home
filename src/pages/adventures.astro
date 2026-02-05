@@ -1,0 +1,357 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { getTrips } from '../lib/photography-static';
+
+const trips = getTrips();
+const featuredTrips = trips.filter(t => t.featured);
+const recentTrips = trips.filter(t => !t.featured);
+---
+
+<BaseLayout title="Adventures — Digital Home">
+  <div class="container-wide">
+    <header class="page-header">
+      <h1 class="page-title">Adventures</h1>
+      <p class="page-description">
+        Photographic journeys. Places explored, moments captured, 
+        stories told through images.
+      </p>
+    </header>
+
+    {#if featuredTrips.length > 0}
+      <section class="featured-section">
+        <h2 class="section-title">Featured</h2>
+        <div class="featured-grid">
+          {featuredTrips.map((trip) => (
+            <a href={`/adventures/${trip.slug}`} class="featured-trip">
+              <div class="trip-image-wrapper">
+                {trip.cover_image_url && (
+                  <img 
+                    src={trip.cover_image_url} 
+                    alt={trip.title}
+                    class="trip-image"
+                  />
+                )}
+                <div class="trip-overlay">
+                  <span class="trip-location">{trip.location}</span>
+                  <h3 class="trip-title">{trip.title}</h3>
+                  {trip.start_date && (
+                    <time class="trip-date">
+                      {new Date(trip.start_date).toLocaleDateString('en-AU', {
+                        year: 'numeric',
+                        month: 'short'
+                      })}
+                    </time>
+                  )}
+                </div>
+              </div>
+            </a>
+          ))}
+        </div>
+      </section>
+    {/if}
+
+    <section class="trips-section">
+      <h2 class="section-title">All Adventures</h2>
+      <div class="trips-grid">
+        {recentTrips.map((trip, index) => (
+          <a 
+            href={`/adventures/${trip.slug}`} 
+            class="trip-card"
+            style={`animation-delay: ${index * 0.1}s`}
+          >
+            <div class="trip-card-inner">
+              {trip.cover_image_url && (
+                <div class="trip-cover">
+                  <img src={trip.cover_image_url} alt={trip.title} />
+                </div>
+              )}
+              <div class="trip-info">
+                <span class="trip-location-tag">{trip.location}</span>
+                <h3 class="trip-card-title">{trip.title}</h3>
+                {trip.description && (
+                  <p class="trip-description">{trip.description}</p>
+                )}
+                {trip.start_date && (
+                  <time class="trip-card-date">
+                    {new Date(trip.start_date).toLocaleDateString('en-AU', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric'
+                    })}
+                  </time>
+                )}
+              </div>
+            </div>
+            <div class="trip-card-accent" aria-hidden="true"></div>
+          </a>
+        ))}
+      </div>
+    </section>
+
+    {#if trips.length === 0}
+      <div class="empty-state">
+        <p>No adventures documented yet. Start exploring.</p>
+      </div>
+    {/if}
+  </div>
+</BaseLayout>
+
+<style>
+  .page-header {
+    margin-bottom: var(--space-xl);
+    text-align: center;
+    padding: var(--space-lg) 0;
+  }
+
+  .page-title {
+    font-size: clamp(2.5rem, 6vw, 4rem);
+    margin-bottom: var(--space-sm);
+    background: linear-gradient(135deg, var(--color-ocean), var(--color-deep));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .page-description {
+    font-size: 1.125rem;
+    color: var(--color-stone);
+    max-width: 42rem;
+    margin: 0 auto;
+    line-height: 1.7;
+  }
+
+  /* Featured Section */
+  .featured-section {
+    margin-bottom: var(--space-xl);
+  }
+
+  .section-title {
+    font-size: 1.5rem;
+    margin-bottom: var(--space-md);
+    padding-bottom: var(--space-sm);
+    border-bottom: 2px solid var(--color-sand);
+    position: relative;
+  }
+
+  .section-title::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 80px;
+    height: 2px;
+    background: var(--color-ocean);
+  }
+
+  .featured-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+    gap: var(--space-lg);
+  }
+
+  .featured-trip {
+    position: relative;
+    display: block;
+    height: 500px;
+    overflow: hidden;
+    border: 3px solid var(--color-sand);
+    text-decoration: none;
+    transition: transform 0.4s var(--ease-editorial);
+  }
+
+  .featured-trip:hover {
+    transform: translateY(-8px);
+  }
+
+  .trip-image-wrapper {
+    position: relative;
+    width: 100%;
+    height: 100%;
+  }
+
+  .trip-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.6s var(--ease-editorial);
+  }
+
+  .featured-trip:hover .trip-image {
+    transform: scale(1.05);
+  }
+
+  .trip-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: var(--space-lg);
+    background: linear-gradient(to top, rgba(44, 74, 82, 0.95), transparent);
+    color: white;
+  }
+
+  .trip-location {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    margin-bottom: 0.5rem;
+    color: var(--color-sand);
+  }
+
+  .trip-title {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+    color: white;
+  }
+
+  .trip-date {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    opacity: 0.8;
+  }
+
+  /* Regular Trips Grid */
+  .trips-section {
+    margin-bottom: var(--space-xl);
+  }
+
+  .trips-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: var(--space-md);
+  }
+
+  .trip-card {
+    position: relative;
+    display: block;
+    text-decoration: none;
+    animation: fadeInUp 0.6s var(--ease-editorial) backwards;
+    transition: transform 0.3s var(--ease-editorial);
+  }
+
+  .trip-card:hover {
+    transform: translateY(-6px) rotate(-0.5deg);
+  }
+
+  .trip-card-inner {
+    position: relative;
+    background: white;
+    border: 2px solid var(--color-sand);
+    overflow: hidden;
+    z-index: 1;
+  }
+
+  .trip-cover {
+    width: 100%;
+    height: 220px;
+    overflow: hidden;
+  }
+
+  .trip-cover img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.4s var(--ease-editorial);
+  }
+
+  .trip-card:hover .trip-cover img {
+    transform: scale(1.08);
+  }
+
+  .trip-info {
+    padding: var(--space-md);
+  }
+
+  .trip-location-tag {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    background: var(--color-sand);
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--color-stone);
+    margin-bottom: var(--space-sm);
+  }
+
+  .trip-card-title {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+    color: var(--color-deep);
+  }
+
+  .trip-description {
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: var(--color-stone);
+    margin-bottom: var(--space-sm);
+  }
+
+  .trip-card-date {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--color-stone);
+  }
+
+  .trip-card-accent {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    right: -8px;
+    bottom: -8px;
+    background: var(--color-sand);
+    border: 2px solid var(--color-dune);
+    z-index: 0;
+    transition: all 0.3s var(--ease-editorial);
+  }
+
+  .trip-card:hover .trip-card-accent {
+    top: 12px;
+    left: 12px;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: var(--space-xl);
+  }
+
+  .empty-state p {
+    font-family: var(--font-mono);
+    color: var(--color-stone);
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @media (max-width: 768px) {
+    .featured-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .featured-trip {
+      height: 400px;
+    }
+
+    .trips-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

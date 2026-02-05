@@ -1,0 +1,188 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { getStories } from '../lib/db-static';
+
+const stories = getStories();
+---
+
+<BaseLayout title="Stories — Digital Home">
+  <div class="container-narrow">
+    <header class="page-header">
+      <h1 class="page-title">Stories</h1>
+      <p class="page-description">
+        Longer-form narratives. Visual essays. 
+        Multi-page explorations built like zines.
+      </p>
+    </header>
+
+    <div class="stories-grid">
+      {stories.map((story, index) => (
+        <a 
+          href={`/stories/${story.slug}`} 
+          class="story-card"
+          style={`animation-delay: ${index * 0.15}s`}
+        >
+          <div class="story-inner">
+            {story.cover_image_url && (
+              <div class="story-cover">
+                <img src={story.cover_image_url} alt={story.title} />
+              </div>
+            )}
+            <div class="story-content">
+              <h2 class="story-title">{story.title}</h2>
+              <time class="story-date">
+                {new Date(story.published_at).toLocaleDateString('en-AU', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric'
+                })}
+              </time>
+            </div>
+          </div>
+          <div class="story-accent" aria-hidden="true"></div>
+        </a>
+      ))}
+    </div>
+
+    {#if stories.length === 0}
+      <div class="empty-state">
+        <p>No stories published yet. Check back soon.</p>
+      </div>
+    {/if}
+  </div>
+</BaseLayout>
+
+<style>
+  .page-header {
+    margin-bottom: var(--space-xl);
+    text-align: center;
+    padding: var(--space-lg) 0;
+  }
+
+  .page-title {
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    margin-bottom: var(--space-sm);
+  }
+
+  .page-description {
+    font-size: 1.125rem;
+    color: var(--color-stone);
+    max-width: 36rem;
+    margin: 0 auto;
+    line-height: 1.7;
+  }
+
+  .stories-grid {
+    display: grid;
+    gap: var(--space-lg);
+    padding-bottom: var(--space-xl);
+  }
+
+  .story-card {
+    position: relative;
+    display: block;
+    text-decoration: none;
+    animation: fadeInUp 0.6s var(--ease-editorial) backwards;
+    transition: transform 0.3s var(--ease-editorial);
+  }
+
+  .story-card:hover {
+    transform: translateX(12px) rotate(0.5deg);
+  }
+
+  .story-inner {
+    position: relative;
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    gap: var(--space-md);
+    background: white;
+    border: 3px solid var(--color-sand);
+    padding: var(--space-md);
+    z-index: 1;
+  }
+
+  .story-cover {
+    width: 200px;
+    height: 200px;
+    overflow: hidden;
+    border: 2px solid var(--color-dune);
+  }
+
+  .story-cover img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.4s var(--ease-editorial);
+  }
+
+  .story-card:hover .story-cover img {
+    transform: scale(1.05);
+  }
+
+  .story-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .story-title {
+    font-size: 2rem;
+    margin-bottom: var(--space-sm);
+    color: var(--color-deep);
+    line-height: 1.2;
+  }
+
+  .story-date {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--color-stone);
+  }
+
+  .story-accent {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    right: -12px;
+    bottom: -12px;
+    background: var(--color-sand);
+    border: 3px solid var(--color-dune);
+    z-index: 0;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: var(--space-xl);
+  }
+
+  .empty-state p {
+    font-family: var(--font-mono);
+    color: var(--color-stone);
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @media (max-width: 640px) {
+    .story-inner {
+      grid-template-columns: 1fr;
+    }
+
+    .story-cover {
+      width: 100%;
+      height: 250px;
+    }
+  }
+</style>

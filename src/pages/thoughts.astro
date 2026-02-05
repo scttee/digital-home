@@ -1,0 +1,64 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ThoughtCard from '../components/ThoughtCard.svelte';
+import { getThoughts } from '../lib/db-static';
+
+const thoughts = getThoughts(50);
+---
+
+<BaseLayout title="Thoughts — Digital Home">
+  <div class="container-narrow">
+    <header class="page-header">
+      <h1 class="page-title">Thoughts</h1>
+      <p class="page-description">
+        A running stream of ideas, observations, and micro-reflections. 
+        No algorithms, just chronology.
+      </p>
+    </header>
+
+    <div class="thoughts-feed stagger-fade">
+      {thoughts.map((thought) => (
+        <ThoughtCard 
+          content={thought.content}
+          timestamp={thought.created_at}
+          tags={thought.tags}
+          client:visible
+        />
+      ))}
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .page-header {
+    margin-bottom: var(--space-xl);
+    text-align: center;
+    padding: var(--space-lg) 0;
+  }
+
+  .page-title {
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    margin-bottom: var(--space-sm);
+    position: relative;
+    display: inline-block;
+  }
+
+  .page-title::before {
+    content: '—';
+    position: absolute;
+    left: -2rem;
+    color: var(--color-ocean);
+  }
+
+  .page-description {
+    font-size: 1.125rem;
+    color: var(--color-stone);
+    max-width: 36rem;
+    margin: 0 auto;
+    line-height: 1.7;
+  }
+
+  .thoughts-feed {
+    padding-bottom: var(--space-xl);
+  }
+</style>
