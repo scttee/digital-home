@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "astro dev",
-    "build": "npm run export-data && astro build",
+    "build": "astro build",
     "preview": "astro preview",
     "export-data": "node scripts/export-to-json.js",
     "db:init": "node scripts/init-db.js",
