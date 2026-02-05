@@ -44,11 +44,11 @@ const stories = getStories();
       ))}
     </div>
 
-    {#if stories.length === 0}
+    {stories.length === 0 && (
       <div class="empty-state">
         <p>No stories published yet. Check back soon.</p>
       </div>
-    {/if}
+    )}
   </div>
 </BaseLayout>
 
