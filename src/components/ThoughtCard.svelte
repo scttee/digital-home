@@ -53,41 +53,31 @@
   .thought-card {
     position: relative;
     margin-bottom: var(--space-md);
-    transition: transform 0.3s var(--ease-editorial);
+    transition: transform 0.3s var(--ease-smooth);
   }
   
   .card-inner {
     position: relative;
     padding: var(--space-md);
-    background: white;
-    border: 2px solid var(--color-sand);
-    z-index: 1;
+    background: transparent;
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    transition: all 0.3s var(--ease-smooth);
+  }
+  
+  .thought-card.hovered .card-inner {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
+    border-color: var(--color-stone);
   }
   
   .card-accent {
-    position: absolute;
-    top: 8px;
-    left: 8px;
-    right: -8px;
-    bottom: -8px;
-    background: var(--color-sand);
-    border: 2px solid var(--color-dune);
-    z-index: 0;
-    transition: all 0.3s var(--ease-editorial);
-  }
-  
-  .thought-card.hovered {
-    transform: translateY(-4px);
-  }
-  
-  .thought-card.hovered .card-accent {
-    top: 12px;
-    left: 12px;
+    display: none;
   }
   
   .content {
     font-family: var(--font-body);
-    font-size: 1.125rem;
+    font-size: 1.0625rem;
     line-height: 1.7;
     margin: 0 0 var(--space-sm);
     color: var(--color-deep);
@@ -102,22 +92,25 @@
   
   .tag {
     display: inline-block;
-    padding: 0.25rem 0.75rem;
-    background: var(--color-sand);
+    padding: 0.25rem 0.625rem;
+    background: var(--color-border);
     font-family: var(--font-mono);
     font-size: 0.75rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.02em;
     color: var(--color-stone);
-    border: 1px solid var(--color-dune);
+    border-radius: 4px;
+    transition: all 0.2s var(--ease-smooth);
+  }
+
+  .tag:hover {
+    background: var(--color-sand);
   }
   
   .timestamp {
     display: block;
     font-family: var(--font-mono);
     font-size: 0.75rem;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.05em;
     color: var(--color-stone);
   }
   
