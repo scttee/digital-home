@@ -7,7 +7,32 @@
     "theme_preference": "coastal",
     "created_at": "2025-02-05T00:00:00.000Z"
   },
-  "thoughts": [],
+  "thoughts": [
+  {
+    "id": 1,
+    "content": "First post on my new digital home. Feels good to own my corner of the web.",
+    "visibility": "public",
+    "tags": null,
+    "created_at": "2025-02-05T12:00:00.000Z",
+    "updated_at": null
+  },
+  {
+    "id": 2,
+    "content": "Morning walk. Salt spray and early light. Shot some photos for the archive.",
+    "visibility": "public",
+    "tags": "[\"photography\", \"morning\"]",
+    "created_at": "2025-02-05T13:15:00.000Z",
+    "updated_at": null
+  },
+  {
+    "id": 3,
+    "content": "Reading about digital sovereignty and personal websites. This feels right.",
+    "visibility": "public",
+    "tags": "[\"web\", \"thoughts\"]",
+    "created_at": "2025-02-05T15:30:00.000Z",
+    "updated_at": null
+  }
+]
   "media": [],
   "collections": [],
   "stories": [],
