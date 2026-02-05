@@ -17,7 +17,7 @@ const recentTrips = trips.filter(t => !t.featured);
       </p>
     </header>
 
-    {#if featuredTrips.length > 0}
+    {featuredTrips.length > 0 && (
       <section class="featured-section">
         <h2 class="section-title">Featured</h2>
         <div class="featured-grid">
@@ -48,7 +48,7 @@ const recentTrips = trips.filter(t => !t.featured);
           ))}
         </div>
       </section>
-    {/if}
+    )}
 
     <section class="trips-section">
       <h2 class="section-title">All Adventures</h2>
@@ -88,11 +88,11 @@ const recentTrips = trips.filter(t => !t.featured);
       </div>
     </section>
 
-    {#if trips.length === 0}
+    {trips.length === 0 && (
       <div class="empty-state">
         <p>No adventures documented yet. Start exploring.</p>
       </div>
-    {/if}
+    )}
   </div>
 </BaseLayout>
 
