@@ -18,41 +18,41 @@ export const getTrips = (featuredOnly = false) => {
   return db.prepare(query).all();
 };
 
-export const getTripBySlug = (slug) => {
+export const getTripBySlug = (slug: string) => {
   return db.prepare('SELECT * FROM trips WHERE slug = ?').get(slug);
 };
 
-export const createTrip = (title, slug, location, startDate, endDate, description, coverImageUrl, featured = false) => {
+export const createTrip = (title: string, slug: string, location: string, startDate: string, endDate: string, description: string, coverImageUrl: string, featured = false) => {
   return db.prepare(`
     INSERT INTO trips (title, slug, location, start_date, end_date, description, cover_image_url, featured)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?)
   `).run(title, slug, location, startDate, endDate, description, coverImageUrl, featured ? 1 : 0);
 };
 
-export const updateTrip = (id, data) => {
-  const fields = [];
-  const values = [];
-  
-  if (data.title) { fields.push('title = ?'); values.push(data.title); }
-  if (data.location) { fields.push('location = ?'); values.push(data.location); }
-  if (data.description) { fields.push('description = ?'); values.push(data.description); }
-  if (data.coverImageUrl) { fields.push('cover_image_url = ?'); values.push(data.coverImageUrl); }
+export const updateTrip = (id: number, data: Record<string, string | number | boolean | undefined>) => {
+  const fields: string[] = [];
+  const values: (string | number)[] = [];
+
+  if (data.title) { fields.push('title = ?'); values.push(data.title as string); }
+  if (data.location) { fields.push('location = ?'); values.push(data.location as string); }
+  if (data.description) { fields.push('description = ?'); values.push(data.description as string); }
+  if (data.coverImageUrl) { fields.push('cover_image_url = ?'); values.push(data.coverImageUrl as string); }
   if (data.featured !== undefined) { fields.push('featured = ?'); values.push(data.featured ? 1 : 0); }
-  
+
   values.push(id);
-  
+
   return db.prepare(`UPDATE trips SET ${fields.join(', ')} WHERE id = ?`).run(...values);
 };
 
-export const deleteTrip = (id) => {
+export const deleteTrip = (id: number) => {
   return db.prepare('DELETE FROM trips WHERE id = ?').run(id);
 };
 
 // ===== TRIP PHOTOS =====
 
-export const getTripPhotos = (tripId) => {
+export const getTripPhotos = (tripId: number) => {
   return db.prepare(`
-    SELECT 
+    SELECT
       m.*,
       tp.caption_override,
       tp.position,
@@ -72,32 +72,32 @@ export const getTripPhotos = (tripId) => {
   `).all(tripId);
 };
 
-export const addPhotoToTrip = (tripId, mediaId, position = 0, captionOverride = null) => {
+export const addPhotoToTrip = (tripId: number, mediaId: number, position = 0, captionOverride: string | null = null) => {
   return db.prepare(`
     INSERT INTO trip_photos (trip_id, media_id, position, caption_override)
     VALUES (?, ?, ?, ?)
   `).run(tripId, mediaId, position, captionOverride);
 };
 
-export const removePhotoFromTrip = (tripId, mediaId) => {
+export const removePhotoFromTrip = (tripId: number, mediaId: number) => {
   return db.prepare('DELETE FROM trip_photos WHERE trip_id = ? AND media_id = ?').run(tripId, mediaId);
 };
 
-export const reorderTripPhotos = (tripId, photoIds) => {
+export const reorderTripPhotos = (tripId: number, photoIds: number[]) => {
   const stmt = db.prepare('UPDATE trip_photos SET position = ? WHERE trip_id = ? AND media_id = ?');
-  
-  photoIds.forEach((mediaId, index) => {
+
+  photoIds.forEach((mediaId: number, index: number) => {
     stmt.run(index, tripId, mediaId);
   });
 };
 
 // ===== PHOTO METADATA =====
 
-export const getPhotoMetadata = (mediaId) => {
+export const getPhotoMetadata = (mediaId: number) => {
   return db.prepare('SELECT * FROM photo_metadata WHERE media_id = ?').get(mediaId);
 };
 
-export const addPhotoMetadata = (mediaId, metadata) => {
+export const addPhotoMetadata = (mediaId: number, metadata: Record<string, string | number | null>) => {
   return db.prepare(`
     INSERT INTO photo_metadata (
       media_id, camera, lens, focal_length, aperture, shutter_speed, iso,
@@ -120,18 +120,18 @@ export const addPhotoMetadata = (mediaId, metadata) => {
   );
 };
 
-export const updatePhotoMetadata = (mediaId, metadata) => {
-  const fields = [];
-  const values = [];
-  
+export const updatePhotoMetadata = (mediaId: number, metadata: Record<string, string | number | null>) => {
+  const fields: string[] = [];
+  const values: (string | number | null)[] = [];
+
   Object.entries(metadata).forEach(([key, value]) => {
     const snakeKey = key.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
     fields.push(`${snakeKey} = ?`);
     values.push(value);
   });
-  
+
   values.push(mediaId);
-  
+
   return db.prepare(`
     UPDATE photo_metadata SET ${fields.join(', ')} WHERE media_id = ?
   `).run(...values);
@@ -139,9 +139,9 @@ export const updatePhotoMetadata = (mediaId, metadata) => {
 
 // ===== STATISTICS =====
 
-export const getTripStats = (tripId) => {
-  const photoCount = db.prepare('SELECT COUNT(*) as count FROM trip_photos WHERE trip_id = ?').get(tripId);
-  
+export const getTripStats = (tripId: number) => {
+  const photoCount = db.prepare('SELECT COUNT(*) as count FROM trip_photos WHERE trip_id = ?').get(tripId) as { count: number };
+
   const cameras = db.prepare(`
     SELECT pm.camera, COUNT(*) as count
     FROM trip_photos tp
@@ -150,7 +150,7 @@ export const getTripStats = (tripId) => {
     GROUP BY pm.camera
     ORDER BY count DESC
   `).all(tripId);
-  
+
   return {
     photoCount: photoCount.count,
     cameras
