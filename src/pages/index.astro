@@ -203,13 +203,30 @@ function parseTags(tags: string | null): string[] {
     const panels = document.querySelectorAll('.panel');
     const scrollHint = document.getElementById('scrollHint');
 
-    // Convert vertical scroll to horizontal
+    // Convert vertical scroll to horizontal (desktop)
     scroller?.addEventListener('wheel', (e) => {
       if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
         e.preventDefault();
         scroller.scrollLeft += e.deltaY;
       }
     }, { passive: false });
+
+    // Touch swipe support for horizontal scrolling
+    let touchStartX = 0;
+    let touchStartY = 0;
+    scroller?.addEventListener('touchstart', (e) => {
+      touchStartX = e.touches[0].clientX;
+      touchStartY = e.touches[0].clientY;
+    }, { passive: true });
+
+    scroller?.addEventListener('touchmove', (e) => {
+      const dx = Math.abs(e.touches[0].clientX - touchStartX);
+      const dy = Math.abs(e.touches[0].clientY - touchStartY);
+      // If swiping more horizontally than vertically, let the scroller handle it
+      if (dx > dy) {
+        // Native horizontal scroll handles this via CSS scroll-snap
+      }
+    }, { passive: true });
 
     // Update active dot on scroll
     let scrollTimeout: ReturnType<typeof setTimeout>;
@@ -738,37 +755,23 @@ function parseTags(tags: string | null): string[] {
     50% { opacity: 1; transform: translateX(4px); }
   }
 
-  /* Mobile: stack vertically */
+  /* Mobile: keep horizontal scroll */
   @media (max-width: 768px) {
-    .horizontal-page {
-      height: auto;
-      overflow: auto;
-    }
-
-    .scroller {
-      flex-direction: column;
-      height: auto;
-      overflow-x: hidden;
-      overflow-y: auto;
-      scroll-snap-type: y mandatory;
-    }
-
     .panel {
-      flex: 0 0 auto;
-      width: 100vw;
-      height: auto;
-      min-height: 100vh;
-      padding: 5rem 1.5rem 3rem;
-      scroll-snap-align: start;
+      padding: 5rem 1.5rem 2rem;
+    }
+
+    .panel-inner {
+      gap: 1.5rem;
     }
 
     .cards-track {
-      flex-direction: row;
       gap: 1rem;
     }
 
     .card {
       flex: 0 0 280px;
+      min-height: 180px;
     }
 
     .thought-card {
@@ -777,6 +780,7 @@ function parseTags(tags: string | null): string[] {
 
     .adventure-card {
       flex: 0 0 300px;
+      min-height: 260px;
     }
 
     .floating-nav {
@@ -788,7 +792,12 @@ function parseTags(tags: string | null): string[] {
     }
 
     .scroll-hint {
-      display: none;
+      bottom: 1rem;
+      right: 1.5rem;
+    }
+
+    .panel-title {
+      font-size: clamp(1.75rem, 8vw, 2.5rem);
     }
   }
 </style>
