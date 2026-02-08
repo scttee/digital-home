@@ -17,7 +17,7 @@ interface Media {
   alt_text: string;
   type: string;
   metadata: string | null;
-  collection_id: number;
+  collection_id: number | null;
   created_at: string;
 }
 

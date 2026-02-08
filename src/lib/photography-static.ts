@@ -18,7 +18,7 @@ interface TripPhoto {
   media_id: number;
   caption_override: string | null;
   position: number;
-  camera?: string;
+  camera: string | null;
   [key: string]: string | number | null | undefined;
 }
 
