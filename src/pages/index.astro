@@ -28,33 +28,57 @@ function parseTags(tags: string | null): string[] {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="A personal space on the web, owned and curated by me.">
-  <title>Digital Home</title>
+  <meta name="description" content="Scott Shirbin — a personal space on the web.">
+  <title>Scott Shirbin — Digital Home</title>
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 </head>
 <body class="horizontal-page">
 
-  <!-- Floating nav -->
-  <nav class="floating-nav">
-    <a href="/" class="nav-logo">Digital Home</a>
+  <!-- Floating nav — dots only -->
+  <nav class="floating-nav" id="floatingNav">
+    <a href="/" class="nav-logo">SS</a>
     <div class="nav-dots" id="navDots">
-      <button class="nav-dot active" data-index="0" aria-label="Thoughts"><span class="dot-label">Thoughts</span></button>
-      <button class="nav-dot" data-index="1" aria-label="Adventures"><span class="dot-label">Adventures</span></button>
-      <button class="nav-dot" data-index="2" aria-label="Stories"><span class="dot-label">Stories</span></button>
-      <button class="nav-dot" data-index="3" aria-label="About"><span class="dot-label">About</span></button>
+      <button class="nav-dot active" data-index="0" aria-label="Intro"><span class="dot-label">00</span></button>
+      <button class="nav-dot" data-index="1" aria-label="Thoughts"><span class="dot-label">01</span></button>
+      <button class="nav-dot" data-index="2" aria-label="Adventures"><span class="dot-label">02</span></button>
+      <button class="nav-dot" data-index="3" aria-label="Stories"><span class="dot-label">03</span></button>
+      <button class="nav-dot" data-index="4" aria-label="About"><span class="dot-label">04</span></button>
     </div>
   </nav>
 
   <!-- Horizontal scroll container -->
   <div class="scroller" id="scroller">
 
-    <!-- Panel 1: Thoughts -->
+    <!-- Panel 00: Opener — scattered letters -->
+    <section class="panel opener-panel" data-section="opener">
+      <div class="opener-name" id="openerName">
+        <div class="opener-line">
+          <span class="scatter-letter" data-sx="-30" data-sy="-25" data-sr="-25">S</span>
+          <span class="scatter-letter" data-sx="22" data-sy="-38" data-sr="18">C</span>
+          <span class="scatter-letter" data-sx="-18" data-sy="32" data-sr="-42">O</span>
+          <span class="scatter-letter" data-sx="38" data-sy="18" data-sr="30">T</span>
+          <span class="scatter-letter" data-sx="-42" data-sy="-12" data-sr="-15">T</span>
+        </div>
+        <div class="opener-line">
+          <span class="scatter-letter" data-sx="28" data-sy="-22" data-sr="22">S</span>
+          <span class="scatter-letter" data-sx="-32" data-sy="38" data-sr="-35">H</span>
+          <span class="scatter-letter" data-sx="42" data-sy="-32" data-sr="42">I</span>
+          <span class="scatter-letter" data-sx="-22" data-sy="15" data-sr="-28">R</span>
+          <span class="scatter-letter" data-sx="32" data-sy="28" data-sr="16">B</span>
+          <span class="scatter-letter" data-sx="-26" data-sy="-35" data-sr="-32">I</span>
+          <span class="scatter-letter" data-sx="18" data-sy="-42" data-sr="28">N</span>
+        </div>
+      </div>
+      <span class="opener-hint">Scroll to explore</span>
+    </section>
+
+    <!-- Panel 01: Thoughts -->
     <section class="panel" data-section="thoughts">
+      <div class="panel-watermark">01</div>
       <div class="panel-inner">
         <div class="panel-header">
           <span class="panel-number">01</span>
-          <h2 class="panel-title">Thoughts</h2>
-          <p class="panel-subtitle">Recent reflections</p>
+          <h2 class="panel-title gradient-text">Thoughts</h2>
         </div>
         <div class="cards-track">
           {thoughts.map((thought) => (
@@ -74,19 +98,19 @@ function parseTags(tags: string | null): string[] {
           ))}
           <a href="/thoughts" class="card view-all-card">
             <span class="view-all-arrow">&rarr;</span>
-            <span class="view-all-text">View all thoughts</span>
+            <span class="view-all-text">All thoughts</span>
           </a>
         </div>
       </div>
     </section>
 
-    <!-- Panel 2: Adventures -->
+    <!-- Panel 02: Adventures -->
     <section class="panel" data-section="adventures">
+      <div class="panel-watermark">02</div>
       <div class="panel-inner">
         <div class="panel-header">
           <span class="panel-number">02</span>
-          <h2 class="panel-title">Adventures</h2>
-          <p class="panel-subtitle">Places explored</p>
+          <h2 class="panel-title gradient-text">Adventures</h2>
         </div>
         <div class="cards-track">
           {trips.length > 0 ? (
@@ -109,7 +133,7 @@ function parseTags(tags: string | null): string[] {
             ))
           ) : (
             <div class="empty-card">
-              <p>No adventures yet. Start exploring.</p>
+              <p>No adventures yet.</p>
             </div>
           )}
           <a href="/adventures" class="card view-all-card">
@@ -120,13 +144,13 @@ function parseTags(tags: string | null): string[] {
       </div>
     </section>
 
-    <!-- Panel 3: Stories -->
+    <!-- Panel 03: Stories -->
     <section class="panel" data-section="stories">
+      <div class="panel-watermark">03</div>
       <div class="panel-inner">
         <div class="panel-header">
           <span class="panel-number">03</span>
-          <h2 class="panel-title">Stories</h2>
-          <p class="panel-subtitle">Long-form narratives</p>
+          <h2 class="panel-title gradient-text">Stories</h2>
         </div>
         <div class="cards-track">
           {stories.length > 0 ? (
@@ -158,29 +182,26 @@ function parseTags(tags: string | null): string[] {
       </div>
     </section>
 
-    <!-- Panel 4: About -->
+    <!-- Panel 04: About Me -->
     <section class="panel" data-section="about">
+      <div class="panel-watermark">04</div>
       <div class="panel-inner about-panel">
         <div class="panel-header">
           <span class="panel-number">04</span>
           <h2 class="panel-title">About</h2>
-          <p class="panel-subtitle">This place</p>
         </div>
         <div class="about-content">
           <div class="about-card">
-            <h3 class="about-name">{profile?.username || 'Welcome'}</h3>
-            <p class="about-bio">{profile?.bio || 'A personal digital home'}</p>
+            <h3 class="about-name">I'm <span class="gradient-text">Scott Shirbin</span></h3>
+            <p class="about-bio">I make things, go outside, and take photos of it all. This is my corner of the internet — no algorithms, no feeds, no metrics.</p>
             <div class="about-details">
-              <p>A personal website built with intention. No algorithms, no feeds, no metrics. Just a quiet space to share thoughts, document adventures, and tell stories.</p>
+              <p>Photographer. Builder. Coastal wanderer. I believe in slow connection, intentional making, and owning your digital space.</p>
             </div>
             <div class="about-links">
-              <a href="/thoughts" class="about-link">Thoughts</a>
+              <a href="mailto:scottshirbin@gmail.com" class="about-link about-link-primary">Say hello &rarr;</a>
               <a href="/adventures" class="about-link">Adventures</a>
+              <a href="/thoughts" class="about-link">Thoughts</a>
               <a href="/archive" class="about-link">Archive</a>
-              <a href="/connect" class="about-link">Connect</a>
-            </div>
-            <div class="about-footer">
-              <span class="about-year">Built with intention. Owned completely. {new Date().getFullYear()}</span>
             </div>
           </div>
         </div>
@@ -189,19 +210,46 @@ function parseTags(tags: string | null): string[] {
 
   </div>
 
-  <!-- Scroll hint -->
-  <div class="scroll-hint" id="scrollHint">
-    <span class="scroll-hint-text">Scroll</span>
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-      <path d="M5 12h14M12 5l7 7-7 7"/>
-    </svg>
-  </div>
-
   <script>
     const scroller = document.getElementById('scroller');
     const dots = document.querySelectorAll('.nav-dot');
     const panels = document.querySelectorAll('.panel');
-    const scrollHint = document.getElementById('scrollHint');
+    const letters = document.querySelectorAll('.scatter-letter');
+    const openerHint = document.querySelector('.opener-hint');
+
+    // Scatter letter animation driven by scroll
+    function updateLetters() {
+      if (!scroller) return;
+      const panelWidth = scroller.offsetWidth;
+      const rawProgress = Math.min(Math.max(scroller.scrollLeft / panelWidth, 0), 1);
+
+      // Letters fully assemble at 25% scroll — complete well before snap
+      const progress = Math.min(rawProgress * 4, 1);
+
+      // Ease the progress for smoother feel
+      const eased = 1 - Math.pow(1 - progress, 3);
+
+      letters.forEach((letter) => {
+        const el = letter as HTMLElement;
+        const sx = parseFloat(el.dataset.sx || '0');
+        const sy = parseFloat(el.dataset.sy || '0');
+        const sr = parseFloat(el.dataset.sr || '0');
+
+        const x = sx * (1 - eased);
+        const y = sy * (1 - eased);
+        const r = sr * (1 - eased);
+        const scale = 0.6 + (0.4 * eased);
+        const opacity = 0.15 + (0.85 * eased);
+
+        el.style.transform = `translate(${x}vw, ${y}vh) rotate(${r}deg) scale(${scale})`;
+        el.style.opacity = String(opacity);
+      });
+
+      // Fade out hint
+      if (openerHint) {
+        (openerHint as HTMLElement).style.opacity = String(Math.max(1 - progress * 4, 0));
+      }
+    }
 
     // Convert vertical scroll to horizontal (desktop)
     scroller?.addEventListener('wheel', (e) => {
@@ -211,42 +259,24 @@ function parseTags(tags: string | null): string[] {
       }
     }, { passive: false });
 
-    // Touch swipe support for horizontal scrolling
-    let touchStartX = 0;
-    let touchStartY = 0;
-    scroller?.addEventListener('touchstart', (e) => {
-      touchStartX = e.touches[0].clientX;
-      touchStartY = e.touches[0].clientY;
-    }, { passive: true });
-
-    scroller?.addEventListener('touchmove', (e) => {
-      const dx = Math.abs(e.touches[0].clientX - touchStartX);
-      const dy = Math.abs(e.touches[0].clientY - touchStartY);
-      // If swiping more horizontally than vertically, let the scroller handle it
-      if (dx > dy) {
-        // Native horizontal scroll handles this via CSS scroll-snap
-      }
-    }, { passive: true });
-
-    // Update active dot on scroll
-    let scrollTimeout: ReturnType<typeof setTimeout>;
+    // Update active dot + letters on scroll
+    let ticking = false;
     scroller?.addEventListener('scroll', () => {
-      clearTimeout(scrollTimeout);
-      scrollTimeout = setTimeout(() => {
-        const scrollLeft = scroller.scrollLeft;
-        const panelWidth = scroller.offsetWidth;
-        const activeIndex = Math.round(scrollLeft / panelWidth);
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          const scrollLeft = scroller!.scrollLeft;
+          const panelWidth = scroller!.offsetWidth;
+          const activeIndex = Math.round(scrollLeft / panelWidth);
 
-        dots.forEach((dot, i) => {
-          dot.classList.toggle('active', i === activeIndex);
+          dots.forEach((dot, i) => {
+            dot.classList.toggle('active', i === activeIndex);
+          });
+
+          updateLetters();
+          ticking = false;
         });
-
-        // Hide scroll hint after first scroll
-        if (scrollLeft > 50 && scrollHint) {
-          scrollHint.style.opacity = '0';
-          scrollHint.style.pointerEvents = 'none';
-        }
-      }, 50);
+        ticking = true;
+      }
     });
 
     // Dot navigation
@@ -269,12 +299,14 @@ function parseTags(tags: string | null): string[] {
         scroller?.scrollBy({ left: -scroller.offsetWidth, behavior: 'smooth' });
       }
     });
+
+    // Initialize letter scatter
+    updateLetters();
   </script>
 </body>
 </html>
 
 <style>
-  /* Page-level overrides */
   .horizontal-page {
     margin: 0;
     padding: 0;
@@ -283,7 +315,7 @@ function parseTags(tags: string | null): string[] {
     background: var(--color-offwhite);
   }
 
-  /* Floating navigation */
+  /* Floating nav — minimal dots */
   .floating-nav {
     position: fixed;
     top: 0;
@@ -294,43 +326,32 @@ function parseTags(tags: string | null): string[] {
     align-items: center;
     padding: 1.25rem 2rem;
     z-index: 100;
-    background: rgba(254, 252, 251, 0.85);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border-bottom: 1px solid var(--color-border);
-  }
-
-  @media (prefers-color-scheme: dark) {
-    .floating-nav {
-      background: rgba(17, 11, 15, 0.85);
-    }
   }
 
   .nav-logo {
     font-family: var(--font-display);
-    font-size: 0.9375rem;
-    font-weight: 600;
-    letter-spacing: -0.02em;
+    font-size: 1.125rem;
+    font-weight: 700;
+    letter-spacing: -0.04em;
     color: var(--color-deep);
     text-decoration: none;
-    transition: opacity 0.2s var(--ease-smooth);
+    transition: color 0.2s;
   }
 
   .nav-logo:hover {
-    opacity: 0.5;
-    color: var(--color-deep);
+    color: var(--color-hot);
   }
 
   .nav-dots {
     display: flex;
     align-items: center;
-    gap: 1.5rem;
+    gap: 1.25rem;
   }
 
   .nav-dot {
     position: relative;
-    width: 8px;
-    height: 8px;
+    width: 10px;
+    height: 10px;
     border-radius: 50%;
     border: 1.5px solid var(--color-stone);
     background: transparent;
@@ -342,22 +363,23 @@ function parseTags(tags: string | null): string[] {
   .nav-dot.active {
     background: var(--color-hot);
     border-color: var(--color-hot);
-    transform: scale(1.3);
+    transform: scale(1.4);
   }
 
   .dot-label {
     position: absolute;
-    bottom: calc(100% + 8px);
+    bottom: calc(100% + 10px);
     left: 50%;
     transform: translateX(-50%);
-    font-family: var(--font-display);
-    font-size: 0.6875rem;
+    font-family: var(--font-mono);
+    font-size: 0.625rem;
     font-weight: 500;
     color: var(--color-stone);
     white-space: nowrap;
     opacity: 0;
-    transition: opacity 0.2s var(--ease-smooth);
+    transition: opacity 0.2s;
     pointer-events: none;
+    letter-spacing: 0.1em;
   }
 
   .nav-dot:hover .dot-label {
@@ -379,7 +401,64 @@ function parseTags(tags: string | null): string[] {
     display: none;
   }
 
-  /* Panels */
+  /* === OPENER PANEL === */
+  .opener-panel {
+    flex: 0 0 100vw;
+    width: 100vw;
+    height: 100vh;
+    scroll-snap-align: start;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .opener-name {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+    z-index: 2;
+  }
+
+  .opener-line {
+    display: flex;
+    justify-content: center;
+    line-height: 1;
+  }
+
+  .scatter-letter {
+    font-family: var(--font-display);
+    font-size: clamp(3.5rem, 11vw, 9rem);
+    font-weight: 700;
+    letter-spacing: -0.06em;
+    color: var(--color-deep);
+    display: inline-block;
+    will-change: transform, opacity;
+    transition: none;
+  }
+
+  .opener-hint {
+    position: absolute;
+    bottom: 3rem;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--color-stone);
+    z-index: 2;
+    animation: hintBreathe 3s ease-in-out infinite;
+  }
+
+  @keyframes hintBreathe {
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 1; }
+  }
+
+  /* === CONTENT PANELS === */
   .panel {
     flex: 0 0 100vw;
     width: 100vw;
@@ -387,7 +466,27 @@ function parseTags(tags: string | null): string[] {
     scroll-snap-align: start;
     display: flex;
     align-items: center;
-    padding: 6rem 3rem 3rem;
+    padding: 5rem 3rem 3rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Giant watermark number */
+  .panel-watermark {
+    position: absolute;
+    top: 50%;
+    right: -0.05em;
+    transform: translateY(-50%);
+    font-family: var(--font-display);
+    font-size: clamp(12rem, 30vw, 22rem);
+    font-weight: 700;
+    letter-spacing: -0.06em;
+    color: var(--color-border);
+    opacity: 0.5;
+    pointer-events: none;
+    line-height: 1;
+    z-index: 0;
+    user-select: none;
   }
 
   .panel-inner {
@@ -399,6 +498,8 @@ function parseTags(tags: string | null): string[] {
     gap: 2.5rem;
     height: 100%;
     justify-content: center;
+    position: relative;
+    z-index: 1;
   }
 
   .panel-header {
@@ -409,7 +510,7 @@ function parseTags(tags: string | null): string[] {
 
   .panel-number {
     font-family: var(--font-mono);
-    font-size: 0.6875rem;
+    font-size: 0.75rem;
     letter-spacing: 0.15em;
     color: var(--color-hot);
     text-transform: uppercase;
@@ -417,21 +518,30 @@ function parseTags(tags: string | null): string[] {
 
   .panel-title {
     font-family: var(--font-display);
-    font-size: clamp(2rem, 4vw, 3.5rem);
+    font-size: clamp(3rem, 7vw, 5.5rem);
     font-weight: 700;
-    letter-spacing: -0.04em;
+    letter-spacing: -0.05em;
     color: var(--color-deep);
-    line-height: 1;
+    line-height: 0.9;
   }
 
-  .panel-subtitle {
-    font-family: var(--font-body);
-    font-size: 1rem;
-    color: var(--color-stone);
-    margin: 0;
+  /* Gradient text — animated */
+  .gradient-text {
+    background: linear-gradient(135deg, var(--color-hot), var(--color-electric), var(--color-lime), var(--color-sunset), var(--color-hot));
+    background-size: 300% 300%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: gradientShift 6s ease infinite;
   }
 
-  /* Cards track - horizontal scroll within panel */
+  @keyframes gradientShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+
+  /* Cards track */
   .cards-track {
     display: flex;
     gap: 1.25rem;
@@ -443,53 +553,33 @@ function parseTags(tags: string | null): string[] {
     -webkit-overflow-scrolling: touch;
   }
 
-  .cards-track::-webkit-scrollbar {
-    height: 4px;
-  }
+  .cards-track::-webkit-scrollbar { height: 3px; }
+  .cards-track::-webkit-scrollbar-track { background: transparent; }
+  .cards-track::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 2px; }
 
-  .cards-track::-webkit-scrollbar-track {
-    background: transparent;
-  }
-
-  .cards-track::-webkit-scrollbar-thumb {
-    background: var(--color-border);
-    border-radius: 2px;
-  }
-
-  /* Base card */
+  /* Base card — clean, no underglow */
   .card {
     flex: 0 0 340px;
     min-height: 220px;
     background: var(--color-offwhite);
     border: 1px solid var(--color-border);
-    border-radius: 12px;
     padding: 1.75rem;
     text-decoration: none;
     color: var(--color-deep);
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    transition: all 0.3s var(--ease-smooth);
+    transition: all 0.25s var(--ease-smooth);
     cursor: pointer;
   }
 
   .card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 12px 32px rgba(225, 29, 128, 0.1);
-    border-color: var(--color-dune);
+    border-color: var(--color-hot);
+    transform: translateY(-2px);
     color: var(--color-deep);
   }
 
-  @media (prefers-color-scheme: dark) {
-    .card:hover {
-      box-shadow: 0 12px 32px rgba(244, 114, 182, 0.12);
-    }
-  }
-
-  /* Thought cards */
-  .thought-card {
-    flex: 0 0 360px;
-  }
+  .thought-card { flex: 0 0 360px; }
 
   .card-body {
     font-family: var(--font-body);
@@ -507,11 +597,7 @@ function parseTags(tags: string | null): string[] {
     margin-top: 1.25rem;
   }
 
-  .card-tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.375rem;
-  }
+  .card-tags { display: flex; flex-wrap: wrap; gap: 0.375rem; }
 
   .tag {
     display: inline-block;
@@ -521,7 +607,6 @@ function parseTags(tags: string | null): string[] {
     font-size: 0.6875rem;
     letter-spacing: 0.02em;
     color: var(--color-stone);
-    border-radius: 4px;
   }
 
   .card-date {
@@ -539,22 +624,9 @@ function parseTags(tags: string | null): string[] {
     min-height: 320px;
   }
 
-  .card-image {
-    width: 100%;
-    height: 200px;
-    overflow: hidden;
-  }
-
-  .card-image img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: transform 0.4s var(--ease-smooth);
-  }
-
-  .card:hover .card-image img {
-    transform: scale(1.04);
-  }
+  .card-image { width: 100%; height: 200px; overflow: hidden; }
+  .card-image img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s var(--ease-smooth); }
+  .card:hover .card-image img { transform: scale(1.04); }
 
   .card-info {
     padding: 1.5rem;
@@ -569,7 +641,7 @@ function parseTags(tags: string | null): string[] {
     font-size: 0.6875rem;
     text-transform: uppercase;
     letter-spacing: 0.12em;
-    color: var(--color-stone);
+    color: var(--color-hot);
   }
 
   .card-title {
@@ -582,18 +654,9 @@ function parseTags(tags: string | null): string[] {
     line-height: 1.2;
   }
 
-  .card-info .card-body {
-    font-size: 0.9375rem;
-    color: var(--color-stone);
-    line-height: 1.5;
-  }
+  .card-info .card-body { font-size: 0.9375rem; color: var(--color-stone); line-height: 1.5; }
 
-  /* Story cards */
-  .story-card {
-    flex: 0 0 340px;
-    padding: 0;
-    overflow: hidden;
-  }
+  .story-card { flex: 0 0 340px; padding: 0; overflow: hidden; }
 
   /* View all card */
   .view-all-card {
@@ -610,8 +673,8 @@ function parseTags(tags: string | null): string[] {
 
   .view-all-card:hover {
     color: var(--color-hot);
+    border-color: var(--color-hot);
     border-style: solid;
-    border-color: var(--color-dune);
   }
 
   .view-all-arrow {
@@ -619,9 +682,7 @@ function parseTags(tags: string | null): string[] {
     transition: transform 0.3s var(--ease-smooth);
   }
 
-  .view-all-card:hover .view-all-arrow {
-    transform: translateX(6px);
-  }
+  .view-all-card:hover .view-all-arrow { transform: translateX(6px); }
 
   .view-all-text {
     font-family: var(--font-display);
@@ -630,7 +691,6 @@ function parseTags(tags: string | null): string[] {
     letter-spacing: 0.02em;
   }
 
-  /* Empty state */
   .empty-card {
     flex: 0 0 340px;
     min-height: 220px;
@@ -638,7 +698,6 @@ function parseTags(tags: string | null): string[] {
     align-items: center;
     justify-content: center;
     border: 1px dashed var(--color-border);
-    border-radius: 12px;
     padding: 2rem;
   }
 
@@ -650,15 +709,13 @@ function parseTags(tags: string | null): string[] {
     margin: 0;
   }
 
-  /* About panel */
+  /* === ABOUT PANEL === */
   .about-panel {
     justify-content: center;
     align-items: flex-start;
   }
 
-  .about-content {
-    max-width: 36rem;
-  }
+  .about-content { max-width: 40rem; }
 
   .about-card {
     display: flex;
@@ -668,24 +725,25 @@ function parseTags(tags: string | null): string[] {
 
   .about-name {
     font-family: var(--font-display);
-    font-size: clamp(1.5rem, 3vw, 2.5rem);
-    font-weight: 600;
-    letter-spacing: -0.03em;
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    font-weight: 700;
+    letter-spacing: -0.04em;
     color: var(--color-deep);
     margin: 0;
+    line-height: 1.1;
   }
 
   .about-bio {
     font-family: var(--font-body);
-    font-size: 1.25rem;
-    line-height: 1.6;
+    font-size: 1.375rem;
+    line-height: 1.5;
     color: var(--color-deep);
     margin: 0;
   }
 
   .about-details p {
     font-family: var(--font-body);
-    font-size: 1rem;
+    font-size: 1.0625rem;
     line-height: 1.7;
     color: var(--color-stone);
     margin: 0;
@@ -701,103 +759,69 @@ function parseTags(tags: string | null): string[] {
   .about-link {
     display: inline-flex;
     align-items: center;
-    padding: 0.5rem 1rem;
+    padding: 0.625rem 1.25rem;
     border: 1px solid var(--color-border);
-    border-radius: 6px;
     font-family: var(--font-display);
-    font-size: 0.8125rem;
-    font-weight: 500;
+    font-size: 0.875rem;
+    font-weight: 600;
     color: var(--color-deep);
     text-decoration: none;
     transition: all 0.2s var(--ease-smooth);
   }
 
   .about-link:hover {
-    background: linear-gradient(135deg, var(--color-hot), var(--color-electric));
+    border-color: var(--color-hot);
+    color: var(--color-hot);
+  }
+
+  .about-link-primary {
+    background: var(--color-hot);
+    border-color: var(--color-hot);
     color: white;
-    border-color: transparent;
   }
 
-  .about-footer {
-    margin-top: 1rem;
+  .about-link-primary:hover {
+    background: var(--color-electric);
+    border-color: var(--color-electric);
+    color: white;
   }
 
-  .about-year {
-    font-family: var(--font-mono);
-    font-size: 0.6875rem;
-    color: var(--color-stone);
-    letter-spacing: 0.05em;
-  }
-
-  /* Scroll hint */
-  .scroll-hint {
-    position: fixed;
-    bottom: 2rem;
-    right: 2.5rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    color: var(--color-stone);
-    transition: opacity 0.5s var(--ease-smooth);
-    z-index: 50;
-    animation: hintPulse 2s var(--ease-smooth) infinite;
-  }
-
-  .scroll-hint-text {
-    font-family: var(--font-mono);
-    font-size: 0.6875rem;
-    text-transform: uppercase;
-    letter-spacing: 0.15em;
-  }
-
-  @keyframes hintPulse {
-    0%, 100% { opacity: 0.5; transform: translateX(0); }
-    50% { opacity: 1; transform: translateX(4px); }
-  }
-
-  /* Mobile: keep horizontal scroll */
+  /* === MOBILE === */
   @media (max-width: 768px) {
-    .panel {
-      padding: 5rem 1.5rem 2rem;
-    }
-
-    .panel-inner {
-      gap: 1.5rem;
-    }
-
-    .cards-track {
-      gap: 1rem;
-    }
-
-    .card {
-      flex: 0 0 280px;
-      min-height: 180px;
-    }
-
-    .thought-card {
-      flex: 0 0 300px;
-    }
-
-    .adventure-card {
-      flex: 0 0 300px;
-      min-height: 260px;
-    }
-
     .floating-nav {
       padding: 1rem 1.25rem;
     }
 
-    .nav-dots {
-      gap: 1rem;
+    .nav-logo {
+      font-size: 0.9375rem;
     }
 
-    .scroll-hint {
-      bottom: 1rem;
-      right: 1.5rem;
+    .nav-dots { gap: 0.875rem; }
+
+    .panel {
+      padding: 4.5rem 1.5rem 2rem;
+    }
+
+    .panel-watermark {
+      font-size: clamp(8rem, 40vw, 14rem);
+      opacity: 0.3;
     }
 
     .panel-title {
-      font-size: clamp(1.75rem, 8vw, 2.5rem);
+      font-size: clamp(2.25rem, 10vw, 3.5rem);
     }
+
+    .cards-track { gap: 1rem; }
+    .card { flex: 0 0 280px; min-height: 180px; }
+    .thought-card { flex: 0 0 300px; }
+    .adventure-card { flex: 0 0 300px; min-height: 260px; }
+
+    .scatter-letter {
+      font-size: clamp(2.5rem, 14vw, 5rem);
+    }
+
+    .opener-hint { bottom: 2rem; }
+
+    .about-bio { font-size: 1.125rem; }
   }
 </style>

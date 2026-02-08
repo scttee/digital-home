@@ -6,10 +6,19 @@ interface Props {
   description?: string;
 }
 
-const { 
-  title = 'Digital Home', 
+const {
+  title = 'Digital Home',
   description = 'A personal space on the web, owned and curated by me.'
 } = Astro.props;
+
+const currentPath = Astro.url.pathname;
+const navItems = [
+  { href: '/thoughts', label: 'Th' },
+  { href: '/adventures', label: 'Ad' },
+  { href: '/archive', label: 'Ar' },
+  { href: '/stories', label: 'St' },
+  { href: '/connect', label: 'Co' },
+];
 ---
 
 <!DOCTYPE html>
@@ -23,15 +32,26 @@ const {
 </head>
 <body>
   <header class="site-header">
-    <div class="container-narrow">
+    <div class="header-inner">
       <nav class="nav">
-        <a href="/" class="logo">Digital Home</a>
-        <div class="nav-links">
-          <a href="/thoughts">Thoughts</a>
-          <a href="/adventures">Adventures</a>
-          <a href="/archive">Archive</a>
-          <a href="/stories">Stories</a>
-          <a href="/connect">Connect</a>
+        <a href="/" class="logo">SS</a>
+
+        <!-- Desktop: text links -->
+        <div class="nav-links desktop-nav">
+          <a href="/thoughts" class:list={[{ active: currentPath.startsWith('/thoughts') }]}>Thoughts</a>
+          <a href="/adventures" class:list={[{ active: currentPath.startsWith('/adventures') }]}>Adventures</a>
+          <a href="/archive" class:list={[{ active: currentPath.startsWith('/archive') }]}>Archive</a>
+          <a href="/stories" class:list={[{ active: currentPath.startsWith('/stories') }]}>Stories</a>
+          <a href="/connect" class:list={[{ active: currentPath.startsWith('/connect') }]}>Connect</a>
+        </div>
+
+        <!-- Mobile: dot indicators -->
+        <div class="nav-dots mobile-nav">
+          {navItems.map(item => (
+            <a href={item.href} class:list={['nav-dot', { active: currentPath.startsWith(item.href) }]} aria-label={item.label}>
+              <span class="dot-label">{item.label}</span>
+            </a>
+          ))}
         </div>
       </nav>
     </div>
@@ -42,9 +62,9 @@ const {
   </main>
 
   <footer class="site-footer">
-    <div class="container-narrow">
+    <div class="footer-inner">
       <p class="footer-text">
-        Built with intention. Owned completely. 
+        Built with intention. Owned completely.
         <span class="footer-year">{new Date().getFullYear()}</span>
       </p>
     </div>
@@ -54,74 +74,126 @@ const {
 
 <style>
   .site-header {
-    padding: var(--space-md) 0;
-    border-bottom: 1px solid var(--color-border);
     position: sticky;
     top: 0;
-    background: rgba(254, 252, 251, 0.8);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
     z-index: 100;
-    transition: all 0.3s var(--ease-smooth);
+    background: rgba(254, 252, 251, 0.9);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--color-border);
   }
 
   @media (prefers-color-scheme: dark) {
     .site-header {
-      background: rgba(17, 11, 15, 0.8);
+      background: rgba(17, 11, 15, 0.9);
     }
+  }
+
+  .header-inner {
+    max-width: 80rem;
+    margin: 0 auto;
+    padding: 0 2rem;
   }
 
   .nav {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    height: 3.5rem;
   }
 
   .logo {
     font-family: var(--font-display);
-    font-size: 1rem;
-    font-weight: 600;
-    letter-spacing: -0.02em;
+    font-size: 1.125rem;
+    font-weight: 700;
+    letter-spacing: -0.04em;
     color: var(--color-deep);
     text-decoration: none;
-    transition: opacity 0.2s var(--ease-smooth);
+    transition: color 0.2s;
   }
 
-  .logo:hover {
-    opacity: 0.6;
-  }
+  .logo:hover { color: var(--color-hot); }
 
-  .nav-links {
+  /* Desktop text nav */
+  .desktop-nav {
     display: flex;
-    gap: var(--space-md);
+    gap: 2rem;
   }
 
-  .nav-links a {
+  .desktop-nav a {
     font-family: var(--font-display);
-    font-size: 0.875rem;
+    font-size: 0.8125rem;
     font-weight: 500;
     color: var(--color-stone);
+    text-decoration: none;
+    letter-spacing: 0.01em;
+    transition: color 0.2s;
     position: relative;
-    transition: color 0.2s var(--ease-smooth);
   }
 
-  .nav-links a::after {
+  .desktop-nav a::after {
     content: '';
     position: absolute;
     bottom: -4px;
     left: 0;
     width: 0;
-    height: 2px;
-    background: var(--color-hot, var(--color-accent));
-    transition: width 0.3s var(--ease-smooth);
+    height: 1.5px;
+    background: var(--color-hot);
+    transition: width 0.25s var(--ease-smooth);
   }
 
-  .nav-links a:hover {
-    color: var(--color-hot, var(--color-accent));
+  .desktop-nav a:hover,
+  .desktop-nav a.active {
+    color: var(--color-hot);
   }
 
-  .nav-links a:hover::after {
+  .desktop-nav a:hover::after,
+  .desktop-nav a.active::after {
     width: 100%;
+  }
+
+  /* Mobile dot nav */
+  .mobile-nav {
+    display: none;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .nav-dot {
+    position: relative;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    border: 1.5px solid var(--color-stone);
+    background: transparent;
+    text-decoration: none;
+    transition: all 0.3s var(--ease-smooth);
+  }
+
+  .nav-dot.active {
+    background: var(--color-hot);
+    border-color: var(--color-hot);
+    transform: scale(1.4);
+  }
+
+  .dot-label {
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: var(--font-mono);
+    font-size: 0.5625rem;
+    font-weight: 500;
+    color: var(--color-stone);
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .nav-dot:hover .dot-label {
+    opacity: 1;
   }
 
   .site-main {
@@ -135,6 +207,12 @@ const {
     margin-top: var(--space-xl);
   }
 
+  .footer-inner {
+    max-width: 80rem;
+    margin: 0 auto;
+    padding: 0 2rem;
+  }
+
   .footer-text {
     font-family: var(--font-mono);
     font-size: 0.75rem;
@@ -144,21 +222,17 @@ const {
   }
 
   .footer-year {
-    color: var(--color-accent);
+    color: var(--color-hot);
   }
 
   @media (max-width: 640px) {
-    .nav {
-      flex-direction: column;
-      gap: var(--space-sm);
-    }
+    .desktop-nav { display: none; }
+    .mobile-nav { display: flex; }
 
-    .nav-links {
-      gap: var(--space-sm);
-    }
+    .header-inner { padding: 0 1.25rem; }
 
     .site-header {
-      padding: var(--space-sm) 0;
+      padding: 0;
     }
   }
 </style>
