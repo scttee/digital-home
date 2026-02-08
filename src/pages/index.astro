@@ -223,8 +223,8 @@ function parseTags(tags: string | null): string[] {
       const panelWidth = scroller.offsetWidth;
       const rawProgress = Math.min(Math.max(scroller.scrollLeft / panelWidth, 0), 1);
 
-      // Letters fully assemble at 50% scroll — well before snap kicks in
-      const progress = Math.min(rawProgress * 2, 1);
+      // Letters fully assemble at 25% scroll — complete well before snap
+      const progress = Math.min(rawProgress * 4, 1);
 
       // Ease the progress for smoother feel
       const eased = 1 - Math.pow(1 - progress, 3);

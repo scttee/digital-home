@@ -1,6 +1,5 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import PhotoGallery from '../../components/PhotoGallery.svelte';
 import { getTripBySlug, getTripPhotos, getTripStats, getTrips } from '../../lib/photography-static';
 
 export async function getStaticPaths() {
@@ -27,162 +26,293 @@ function formatDate(dateString: string): string {
     day: 'numeric'
   });
 }
+
+// Atmospheric filler phrases
+const vibes = [
+  'Salt air and slow mornings',
+  'No signal, no worries',
+  'Golden hour lasts longer out here',
+  'The kind of tired that feels good',
+  'Sand in everything, care about nothing',
+  'Stars you forgot existed',
+  'The ocean does the thinking for you',
+  'Time moves different by the water',
+];
+
+// Pick vibes based on photo count to fill the grid
+function getVibesForGaps(photoCount: number): string[] {
+  const cols = 3; // approximate grid columns
+  const totalCells = Math.ceil((photoCount + 2) / cols) * cols; // round up to fill rows
+  const gaps = totalCells - photoCount;
+  return vibes.slice(0, Math.max(gaps, 1));
+}
+
+const fillerVibes = getVibesForGaps(photos.length);
+
+// Interleave photos with vibe blocks
+type GridItem = { type: 'photo'; data: typeof photos[0]; index: number } | { type: 'vibe'; text: string };
+const gridItems: GridItem[] = [];
+let vibeIndex = 0;
+
+photos.forEach((photo, i) => {
+  gridItems.push({ type: 'photo', data: photo, index: i });
+  // Insert a vibe after every 3rd photo if we have vibes left
+  if ((i + 1) % 3 === 0 && vibeIndex < fillerVibes.length) {
+    gridItems.push({ type: 'vibe', text: fillerVibes[vibeIndex] });
+    vibeIndex++;
+  }
+});
+
+// Add remaining vibes at the end
+while (vibeIndex < fillerVibes.length) {
+  gridItems.push({ type: 'vibe', text: fillerVibes[vibeIndex] });
+  vibeIndex++;
+}
 ---
 
 <BaseLayout title={`${trip.title} — Adventures`}>
-  <div class="block-page">
-    <div class="block-grid">
-      <!-- Hero image block -->
-      {trip.cover_image_url && (
-        <div class="block hero-block">
-          <img src={trip.cover_image_url} alt={trip.title} class="hero-img" />
-        </div>
-      )}
-
-      <!-- Trip info block -->
-      <div class="block info-block">
-        <span class="block-label">{trip.location}</span>
-        <h1 class="block-title">{trip.title}</h1>
-        {trip.start_date && (
-          <div class="trip-dates">
-            <time>{formatDate(trip.start_date)}</time>
-            {trip.end_date && (
-              <span> — {formatDate(trip.end_date)}</span>
-            )}
-          </div>
-        )}
-        {trip.description && (
-          <p class="trip-description">{trip.description}</p>
-        )}
-      </div>
-
-      <!-- Photo blocks -->
-      {photos.map((photo, i) => (
-        <div class="block photo-block" style={`animation-delay: ${(i + 2) * 0.08}s`}>
-          <img src={photo.file_url} alt={photo.alt_text || photo.caption || ''} class="photo-img" loading="lazy" />
-          {(photo.caption_override || photo.caption) && (
-            <span class="photo-caption">{photo.caption_override || photo.caption}</span>
+  <div class="adventure-page">
+    <!-- Hero -->
+    {trip.cover_image_url && (
+      <div class="hero">
+        <img src={trip.cover_image_url} alt={trip.title} class="hero-img" />
+        <div class="hero-overlay">
+          <span class="hero-location">{trip.location}</span>
+          <h1 class="hero-title">{trip.title}</h1>
+          {trip.start_date && (
+            <div class="hero-dates">
+              <time>{formatDate(trip.start_date)}</time>
+              {trip.end_date && <span> — {formatDate(trip.end_date)}</span>}
+            </div>
           )}
         </div>
-      ))}
+      </div>
+    )}
 
-      {photos.length === 0 && (
-        <div class="block empty-block">
-          <p>No photos added to this adventure yet.</p>
-        </div>
-      )}
-
-      <!-- Camera info at bottom -->
-      {stats.cameras.length > 0 && (
-        <div class="block camera-block">
-          <span class="camera-label">Shot with</span>
-          <div class="camera-list">
-            {stats.cameras.map(cam => (
-              <span class="camera-name">
-                {cam.camera}
-                {cam.count > 1 && <span class="camera-count"> x{cam.count}</span>}
-              </span>
-            ))}
+    {!trip.cover_image_url && (
+      <div class="info-header">
+        <span class="hero-location">{trip.location}</span>
+        <h1 class="hero-title">{trip.title}</h1>
+        {trip.start_date && (
+          <div class="hero-dates">
+            <time>{formatDate(trip.start_date)}</time>
+            {trip.end_date && <span> — {formatDate(trip.end_date)}</span>}
           </div>
+        )}
+      </div>
+    )}
+
+    {trip.description && (
+      <div class="description-bar">
+        <p>{trip.description}</p>
+      </div>
+    )}
+
+    <!-- Photo grid — no borders, immersive -->
+    <div class="photo-grid">
+      {gridItems.map((item) =>
+        item.type === 'photo' ? (
+          <div class="grid-photo" style={`animation-delay: ${item.index * 0.06}s`}>
+            <img src={item.data.file_url} alt={item.data.alt_text || item.data.caption || ''} loading="lazy" />
+            {(item.data.caption_override || item.data.caption) && (
+              <span class="grid-caption">{item.data.caption_override || item.data.caption}</span>
+            )}
+          </div>
+        ) : (
+          <div class="grid-vibe">
+            <p class="vibe-text">{item.text}</p>
+          </div>
+        )
+      )}
+    </div>
+
+    {photos.length === 0 && (
+      <div class="empty-state">
+        <p>No photos added to this adventure yet.</p>
+      </div>
+    )}
+
+    <!-- Footer bar -->
+    <div class="adventure-footer">
+      {stats.cameras.length > 0 && (
+        <div class="camera-info">
+          <span class="camera-label">Shot with</span>
+          {stats.cameras.map(cam => (
+            <span class="camera-name">
+              {cam.camera}
+              {cam.count > 1 && <span class="camera-count"> x{cam.count}</span>}
+            </span>
+          ))}
         </div>
       )}
-
-      <!-- Back nav block -->
-      <a href="/adventures" class="block nav-block">
-        <span class="nav-arrow">&larr;</span>
-        <span class="nav-text">Back to Adventures</span>
+      <a href="/adventures" class="back-link">
+        <span>&larr;</span>
+        <span>Back to Adventures</span>
       </a>
     </div>
   </div>
 </BaseLayout>
 
 <style>
-  .block-page {
-    padding: 0 1rem 4rem;
-    max-width: 100%;
+  .adventure-page {
+    margin: 0;
   }
 
-  .block-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-    gap: 1px;
-    background: var(--color-border);
-    border: 1px solid var(--color-border);
-  }
-
-  .block {
-    background: var(--color-offwhite);
-    padding: 2rem;
-    animation: blockIn 0.5s var(--ease-smooth) backwards;
-    transition: background 0.2s var(--ease-smooth);
-  }
-
-  /* Hero block */
-  .hero-block {
-    grid-column: 1 / -1;
-    padding: 0;
-    max-height: 60vh;
+  /* Hero — full bleed */
+  .hero {
+    position: relative;
+    width: 100%;
+    height: 70vh;
     overflow: hidden;
   }
 
   .hero-img {
     width: 100%;
-    height: 60vh;
+    height: 100%;
     object-fit: cover;
   }
 
-  /* Info block */
-  .info-block {
-    grid-column: 1 / -1;
-    padding: 3rem 2rem;
+  .hero-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 4rem 2.5rem 2.5rem;
+    background: linear-gradient(to top, rgba(28, 16, 23, 0.85) 0%, rgba(28, 16, 23, 0.4) 50%, transparent 100%);
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 0.375rem;
   }
 
-  .block-label {
+  .hero-location {
     font-family: var(--font-mono);
     font-size: 0.6875rem;
-    letter-spacing: 0.15em;
+    letter-spacing: 0.2em;
     text-transform: uppercase;
     color: var(--color-hot);
   }
 
-  .block-title {
+  .hero-title {
     font-family: var(--font-display);
-    font-size: clamp(2.5rem, 5vw, 4rem);
+    font-size: clamp(2.5rem, 6vw, 4.5rem);
     font-weight: 700;
     letter-spacing: -0.04em;
     line-height: 1;
+    color: white;
+    margin: 0;
   }
 
-  .trip-dates {
+  .hero-dates {
     font-family: var(--font-mono);
-    font-size: 0.8125rem;
+    font-size: 0.75rem;
     letter-spacing: 0.05em;
-    color: var(--color-stone);
+    color: rgba(255, 255, 255, 0.7);
   }
 
-  .trip-description {
+  .info-header {
+    padding: 3rem 2.5rem 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+  }
+
+  .description-bar {
+    padding: 1.25rem 2.5rem;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .description-bar p {
     font-family: var(--font-body);
     font-size: 1.125rem;
-    line-height: 1.7;
+    line-height: 1.6;
     color: var(--color-stone);
+    margin: 0;
     max-width: 42rem;
-    margin: 0.5rem 0 0;
   }
 
-  /* Camera block — bottom of page */
-  .camera-block {
-    grid-column: 1 / -1;
+  /* Photo grid — no borders, edge to edge */
+  .photo-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 0;
+  }
+
+  .grid-photo {
+    position: relative;
+    overflow: hidden;
+    min-height: 320px;
+    animation: fadeIn 0.5s var(--ease-smooth) backwards;
+  }
+
+  .grid-photo img {
+    width: 100%;
+    height: 100%;
+    min-height: 320px;
+    object-fit: cover;
+    transition: transform 0.4s var(--ease-smooth);
+    display: block;
+  }
+
+  .grid-photo:hover img {
+    transform: scale(1.03);
+  }
+
+  .grid-caption {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 2.5rem 1.5rem 1.25rem;
+    background: linear-gradient(to top, rgba(28, 16, 23, 0.7), transparent);
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.06em;
+    color: white;
+    opacity: 0;
+    transition: opacity 0.3s var(--ease-smooth);
+  }
+
+  .grid-photo:hover .grid-caption {
+    opacity: 1;
+  }
+
+  /* Vibe / quote blocks */
+  .grid-vibe {
     display: flex;
     align-items: center;
-    gap: 1rem;
-    padding: 1.5rem 2rem;
+    justify-content: center;
+    min-height: 320px;
+    padding: 2.5rem;
+    background: var(--color-deep);
+    animation: fadeIn 0.5s var(--ease-smooth) backwards;
   }
 
-  .camera-block:hover {
-    background: var(--color-offwhite);
+  .vibe-text {
+    font-family: var(--font-body);
+    font-size: clamp(1.5rem, 3vw, 2rem);
+    font-style: italic;
+    line-height: 1.3;
+    color: rgba(255, 255, 255, 0.6);
+    text-align: center;
+    margin: 0;
+    max-width: 16rem;
+  }
+
+  /* Footer */
+  .adventure-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem 2.5rem;
+    border-top: 1px solid var(--color-border);
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .camera-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
   }
 
   .camera-label {
@@ -191,13 +321,6 @@ function formatDate(dateString: string): string {
     text-transform: uppercase;
     letter-spacing: 0.12em;
     color: var(--color-stone);
-    flex-shrink: 0;
-  }
-
-  .camera-list {
-    display: flex;
-    gap: 1rem;
-    flex-wrap: wrap;
   }
 
   .camera-name {
@@ -213,120 +336,65 @@ function formatDate(dateString: string): string {
     color: var(--color-stone);
   }
 
-  /* Photo blocks */
-  .photo-block {
-    padding: 0;
-    position: relative;
-    overflow: hidden;
-    min-height: 280px;
-  }
-
-  .photo-block:hover {
-    background: var(--color-offwhite);
-  }
-
-  .photo-img {
-    width: 100%;
-    height: 100%;
-    min-height: 280px;
-    object-fit: cover;
-    transition: transform 0.4s var(--ease-smooth);
-  }
-
-  .photo-block:hover .photo-img {
-    transform: scale(1.03);
-  }
-
-  .photo-caption {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    padding: 2rem 1.5rem 1rem;
-    background: linear-gradient(to top, rgba(28, 16, 23, 0.7), transparent);
-    font-family: var(--font-mono);
-    font-size: 0.75rem;
-    letter-spacing: 0.05em;
-    color: white;
-    opacity: 0;
-    transition: opacity 0.3s var(--ease-smooth);
-  }
-
-  .photo-block:hover .photo-caption {
-    opacity: 1;
-  }
-
-  /* Nav block */
-  .nav-block {
-    grid-column: 1 / -1;
+  .back-link {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
-    padding: 2rem;
-    text-decoration: none;
+    gap: 0.5rem;
+    font-family: var(--font-display);
+    font-size: 0.8125rem;
+    font-weight: 500;
     color: var(--color-stone);
-    cursor: pointer;
+    text-decoration: none;
+    transition: color 0.2s;
   }
 
-  .nav-block:hover {
-    background: var(--color-sand);
+  .back-link:hover {
     color: var(--color-hot);
   }
 
-  .nav-arrow {
-    font-size: 1.25rem;
-    transition: transform 0.3s var(--ease-smooth);
+  .empty-state {
+    padding: 4rem 2.5rem;
+    text-align: center;
   }
 
-  .nav-block:hover .nav-arrow {
-    transform: translateX(-4px);
-  }
-
-  .nav-text {
-    font-family: var(--font-display);
-    font-size: 0.875rem;
-    font-weight: 500;
-    letter-spacing: 0.02em;
-  }
-
-  .empty-block {
-    grid-column: 1 / -1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 200px;
-  }
-
-  .empty-block p {
+  .empty-state p {
     font-family: var(--font-mono);
     font-size: 0.8125rem;
     color: var(--color-stone);
     margin: 0;
   }
 
-  @keyframes blockIn {
-    from {
-      opacity: 0;
-      transform: translateY(12px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
   }
 
   @media (max-width: 640px) {
-    .block-grid {
+    .photo-grid {
       grid-template-columns: 1fr;
     }
 
-    .info-block {
-      padding: 2rem 1.5rem;
+    .hero { height: 50vh; }
+
+    .hero-overlay {
+      padding: 3rem 1.5rem 1.5rem;
     }
 
-    .hero-block,
-    .hero-img {
-      height: 40vh;
+    .description-bar {
+      padding: 1rem 1.5rem;
+    }
+
+    .adventure-footer {
+      padding: 1.25rem 1.5rem;
+    }
+
+    .grid-photo,
+    .grid-photo img {
+      min-height: 260px;
+    }
+
+    .grid-vibe {
+      min-height: 200px;
     }
   }
 </style>
