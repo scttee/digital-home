@@ -33,10 +33,164 @@
     "updated_at": null
   }
 ],
-  "media": [],
+  "media": [
+    {
+      "id": 1,
+      "file_url": "/images/adventures/up-the-coast-camping/beach-hat.jpg",
+      "caption": "Beach vibes",
+      "alt_text": "A green hat resting on dark clothes at the beach with sunscreen nearby",
+      "type": "photo",
+      "metadata": null,
+      "collection_id": null,
+      "created_at": "2026-02-01T10:00:00.000Z"
+    },
+    {
+      "id": 2,
+      "file_url": "/images/adventures/up-the-coast-camping/sunscreen-portrait.jpg",
+      "caption": "Sun protection, the ritual",
+      "alt_text": "Black and white portrait from behind of someone at the beach with sunscreen on their back",
+      "type": "photo",
+      "metadata": null,
+      "collection_id": null,
+      "created_at": "2026-02-01T11:00:00.000Z"
+    },
+    {
+      "id": 3,
+      "file_url": "/images/adventures/up-the-coast-camping/coastal-dunes.jpg",
+      "caption": "Dunes and distant headlands",
+      "alt_text": "Lush green coastal scrubland stretching toward sand dunes and ocean with a distant island on the horizon",
+      "type": "photo",
+      "metadata": null,
+      "collection_id": null,
+      "created_at": "2026-02-01T12:00:00.000Z"
+    },
+    {
+      "id": 4,
+      "file_url": "/images/adventures/up-the-coast-camping/lagoon-walk.jpg",
+      "caption": "The walk to the lagoon",
+      "alt_text": "Three friends walking barefoot on sand toward a still lagoon with lush green hills behind",
+      "type": "photo",
+      "metadata": null,
+      "collection_id": null,
+      "created_at": "2026-02-01T13:00:00.000Z"
+    },
+    {
+      "id": 5,
+      "file_url": "/images/adventures/up-the-coast-camping/campsite.jpg",
+      "caption": "Home for the weekend",
+      "alt_text": "Campsite with blue and red tents set up among trees, someone standing and smiling in the middle",
+      "type": "photo",
+      "metadata": null,
+      "collection_id": null,
+      "created_at": "2026-02-01T14:00:00.000Z"
+    }
+  ],
   "collections": [],
   "stories": [],
   "storyPages": [],
-  "trips": [],
-  "tripPhotos": []
+  "trips": [
+    {
+      "id": 1,
+      "title": "Up the Coast Camping",
+      "slug": "up-the-coast-camping",
+      "location": "The Coast",
+      "start_date": "2026-02-01",
+      "end_date": "2026-02-03",
+      "description": "I really enjoyed it.",
+      "cover_image_url": "/images/adventures/up-the-coast-camping/coastal-dunes.jpg",
+      "featured": 1
+    }
+  ],
+  "tripPhotos": [
+    {
+      "id": 1,
+      "trip_id": 1,
+      "media_id": 1,
+      "file_url": "/images/adventures/up-the-coast-camping/beach-hat.jpg",
+      "caption": "Beach vibes",
+      "caption_override": null,
+      "alt_text": "A green hat resting on dark clothes at the beach with sunscreen nearby",
+      "position": 0,
+      "camera": null,
+      "lens": null,
+      "focal_length": null,
+      "aperture": null,
+      "shutter_speed": null,
+      "iso": null,
+      "film_stock": null,
+      "location_name": null
+    },
+    {
+      "id": 2,
+      "trip_id": 1,
+      "media_id": 2,
+      "file_url": "/images/adventures/up-the-coast-camping/sunscreen-portrait.jpg",
+      "caption": "Sun protection, the ritual",
+      "caption_override": null,
+      "alt_text": "Black and white portrait from behind of someone at the beach with sunscreen on their back",
+      "position": 1,
+      "camera": null,
+      "lens": null,
+      "focal_length": null,
+      "aperture": null,
+      "shutter_speed": null,
+      "iso": null,
+      "film_stock": null,
+      "location_name": null
+    },
+    {
+      "id": 3,
+      "trip_id": 1,
+      "media_id": 3,
+      "file_url": "/images/adventures/up-the-coast-camping/coastal-dunes.jpg",
+      "caption": "Dunes and distant headlands",
+      "caption_override": null,
+      "alt_text": "Lush green coastal scrubland stretching toward sand dunes and ocean with a distant island on the horizon",
+      "position": 2,
+      "camera": null,
+      "lens": null,
+      "focal_length": null,
+      "aperture": null,
+      "shutter_speed": null,
+      "iso": null,
+      "film_stock": null,
+      "location_name": null
+    },
+    {
+      "id": 4,
+      "trip_id": 1,
+      "media_id": 4,
+      "file_url": "/images/adventures/up-the-coast-camping/lagoon-walk.jpg",
+      "caption": "The walk to the lagoon",
+      "caption_override": null,
+      "alt_text": "Three friends walking barefoot on sand toward a still lagoon with lush green hills behind",
+      "position": 3,
+      "camera": null,
+      "lens": null,
+      "focal_length": null,
+      "aperture": null,
+      "shutter_speed": null,
+      "iso": null,
+      "film_stock": null,
+      "location_name": null
+    },
+    {
+      "id": 5,
+      "trip_id": 1,
+      "media_id": 5,
+      "file_url": "/images/adventures/up-the-coast-camping/campsite.jpg",
+      "caption": "Home for the weekend",
+      "caption_override": null,
+      "alt_text": "Campsite with blue and red tents set up among trees, someone standing and smiling in the middle",
+      "position": 4,
+      "camera": null,
+      "lens": null,
+      "focal_length": null,
+      "aperture": null,
+      "shutter_speed": null,
+      "iso": null,
+      "film_stock": null,
+      "location_name": null
+    }
+  ]
 }
