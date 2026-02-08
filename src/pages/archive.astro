@@ -1,6 +1,5 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import MediaGrid from '../components/MediaGrid.svelte';
 import { getAllMedia, getCollections } from '../lib/db-static';
 
 const media = getAllMedia();
@@ -8,151 +7,272 @@ const collections = getCollections();
 ---
 
 <BaseLayout title="Archive — Digital Home">
-  <div class="container-wide">
-    <header class="page-header">
-      <h1 class="page-title">Visual Archive</h1>
-      <p class="page-description">
-        Moments captured and preserved. A living collection of images, 
-        organized not by algorithm but by intention.
-      </p>
-    </header>
+  <div class="block-page">
+    <div class="block-grid">
+      <!-- Header block -->
+      <div class="block block-header">
+        <span class="block-label">Archive</span>
+        <h1 class="block-title">Visual Archive</h1>
+        <p class="block-subtitle">Moments captured and preserved. A living collection of images, organized not by algorithm but by intention.</p>
+      </div>
 
-    {collections.length > 0 && (
-      <section class="collections">
-        <h2 class="collections-title">Collections</h2>
-        <div class="collections-grid">
-          {collections.map((collection) => (
-            <a href={`/archive/${collection.slug}`} class="collection-card">
-              <div class="collection-inner">
-                {collection.cover_image_url && (
-                  <img 
-                    src={collection.cover_image_url} 
-                    alt={collection.title}
-                    class="collection-cover"
-                  />
-                )}
-                <h3 class="collection-title">{collection.title}</h3>
-                <p class="collection-description">{collection.description}</p>
-              </div>
-              <div class="collection-accent" aria-hidden="true"></div>
-            </a>
-          ))}
+      <!-- Collection blocks -->
+      {collections.map((collection, i) => (
+        <a href={`/archive/${collection.slug}`} class="block collection-block" style={`animation-delay: ${i * 0.08}s`}>
+          {collection.cover_image_url && (
+            <div class="collection-image">
+              <img src={collection.cover_image_url} alt={collection.title} loading="lazy" />
+            </div>
+          )}
+          <div class="collection-info">
+            <span class="collection-label">Collection</span>
+            <h2 class="collection-name">{collection.title}</h2>
+            {collection.description && (
+              <p class="collection-description">{collection.description}</p>
+            )}
+          </div>
+          <span class="collection-arrow">&rarr;</span>
+        </a>
+      ))}
+
+      <!-- Media blocks -->
+      {media.map((item, i) => (
+        <div class="block media-block" style={`animation-delay: ${(i + collections.length) * 0.06}s`}>
+          <div class="media-image">
+            <img src={item.file_url} alt={item.alt_text || item.caption || ''} loading="lazy" />
+          </div>
+          {item.caption && (
+            <span class="media-caption">{item.caption}</span>
+          )}
         </div>
-      </section>
-    )}
+      ))}
 
-    <section class="all-media">
-      <h2 class="section-title">All Media</h2>
-      {media.length > 0 ? (
-        <MediaGrid media={media} client:visible />
-      ) : (
-        <p class="empty-state">No media yet. Start building your archive.</p>
+      {media.length === 0 && collections.length === 0 && (
+        <div class="block empty-block">
+          <p>No media yet. Start building your archive.</p>
+        </div>
       )}
-    </section>
+    </div>
   </div>
 </BaseLayout>
 
 <style>
-  .page-header {
-    margin-bottom: var(--space-xl);
-    text-align: center;
-    padding: var(--space-lg) 0;
+  .block-page {
+    padding: 0 1rem 4rem;
+    max-width: 100%;
   }
 
-  .page-title {
-    font-size: clamp(2rem, 5vw, 3.5rem);
-    margin-bottom: var(--space-sm);
-  }
-
-  .page-description {
-    font-size: 1.125rem;
-    color: var(--color-stone);
-    max-width: 42rem;
-    margin: 0 auto;
-    line-height: 1.7;
-  }
-
-  .collections {
-    margin-bottom: var(--space-xl);
-  }
-
-  .collections-title {
-    font-size: 1.5rem;
-    margin-bottom: var(--space-md);
-    padding-bottom: var(--space-sm);
-    border-bottom: 2px solid var(--color-sand);
-  }
-
-  .collections-grid {
+  .block-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: var(--space-md);
+    gap: 1px;
+    background: var(--color-border);
+    border: 1px solid var(--color-border);
   }
 
-  .collection-card {
-    position: relative;
-    display: block;
-    text-decoration: none;
-    transition: transform 0.3s var(--ease-editorial);
+  .block {
+    background: var(--color-offwhite);
+    padding: 2rem;
+    animation: blockIn 0.5s var(--ease-smooth) backwards;
+    transition: background 0.2s var(--ease-smooth);
   }
 
-  .collection-card:hover {
-    transform: translateY(-6px) rotate(-0.5deg);
+  .block:hover {
+    background: var(--color-sand);
   }
 
-  .collection-inner {
-    position: relative;
-    padding: var(--space-md);
-    background: white;
-    border: 2px solid var(--color-sand);
-    z-index: 1;
+  .block-header {
+    grid-column: 1 / -1;
+    padding: 3rem 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
   }
 
-  .collection-cover {
-    width: 100%;
-    height: 200px;
-    object-fit: cover;
-    margin-bottom: var(--space-sm);
+  .block-header:hover {
+    background: var(--color-offwhite);
   }
 
-  .collection-title {
-    font-size: 1.25rem;
-    margin-bottom: 0.5rem;
-    color: var(--color-deep);
+  .block-label {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--color-hot);
   }
 
-  .collection-description {
-    font-size: 0.875rem;
+  .block-title {
+    font-family: var(--font-display);
+    font-size: clamp(2.5rem, 5vw, 4rem);
+    font-weight: 700;
+    letter-spacing: -0.04em;
+    line-height: 1;
+  }
+
+  .block-subtitle {
+    font-family: var(--font-body);
+    font-size: 1.0625rem;
+    line-height: 1.6;
     color: var(--color-stone);
-    line-height: 1.5;
+    max-width: 36rem;
     margin: 0;
   }
 
-  .collection-accent {
-    position: absolute;
-    top: 8px;
-    left: 8px;
-    right: -8px;
-    bottom: -8px;
-    background: var(--color-sand);
-    border: 2px solid var(--color-dune);
-    z-index: 0;
+  /* Collection blocks */
+  .collection-block {
+    display: flex;
+    flex-direction: column;
+    min-height: 300px;
+    padding: 0;
+    text-decoration: none;
+    color: var(--color-deep);
+    position: relative;
+    overflow: hidden;
   }
 
-  .section-title {
-    font-size: 1.5rem;
-    margin-bottom: var(--space-md);
-    padding-bottom: var(--space-sm);
-    border-bottom: 2px solid var(--color-sand);
+  .collection-image {
+    width: 100%;
+    height: 180px;
+    overflow: hidden;
   }
 
-  .empty-state {
-    text-align: center;
-    padding: var(--space-xl);
+  .collection-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.4s var(--ease-smooth);
+  }
+
+  .collection-block:hover .collection-image img {
+    transform: scale(1.05);
+  }
+
+  .collection-info {
+    padding: 1.5rem 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    flex: 1;
+  }
+
+  .collection-label {
     font-family: var(--font-mono);
-    color: var(--color-stone);
-    font-size: 0.875rem;
+    font-size: 0.6875rem;
     text-transform: uppercase;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.12em;
+    color: var(--color-hot);
+  }
+
+  .collection-name {
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+
+  .collection-description {
+    font-family: var(--font-body);
+    font-size: 0.875rem;
+    line-height: 1.5;
+    color: var(--color-stone);
+    margin: 0;
+  }
+
+  .collection-arrow {
+    position: absolute;
+    bottom: 1.5rem;
+    right: 2rem;
+    font-size: 1.25rem;
+    color: var(--color-stone);
+    transition: all 0.3s var(--ease-smooth);
+  }
+
+  .collection-block:hover .collection-arrow {
+    color: var(--color-hot);
+    transform: translateX(4px);
+  }
+
+  /* Media blocks */
+  .media-block {
+    padding: 0;
+    position: relative;
+    overflow: hidden;
+    min-height: 250px;
+  }
+
+  .media-block:hover {
+    background: var(--color-offwhite);
+  }
+
+  .media-image {
+    width: 100%;
+    height: 100%;
+  }
+
+  .media-image img {
+    width: 100%;
+    height: 100%;
+    min-height: 250px;
+    object-fit: cover;
+    transition: transform 0.4s var(--ease-smooth);
+  }
+
+  .media-block:hover .media-image img {
+    transform: scale(1.03);
+  }
+
+  .media-caption {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 2rem 1.5rem 1rem;
+    background: linear-gradient(to top, rgba(28, 16, 23, 0.7), transparent);
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+    color: white;
+    opacity: 0;
+    transition: opacity 0.3s var(--ease-smooth);
+  }
+
+  .media-block:hover .media-caption {
+    opacity: 1;
+  }
+
+  .empty-block {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 200px;
+  }
+
+  .empty-block p {
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    color: var(--color-stone);
+    margin: 0;
+  }
+
+  @keyframes blockIn {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @media (max-width: 640px) {
+    .block-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .block-header {
+      padding: 2rem 1.5rem;
+    }
   }
 </style>

@@ -19,229 +19,207 @@ if (!trip) {
 
 const photos = getTripPhotos(trip.id);
 const stats = getTripStats(trip.id);
+
+function formatDate(dateString: string): string {
+  return new Date(dateString).toLocaleDateString('en-AU', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+}
 ---
 
 <BaseLayout title={`${trip.title} — Adventures`}>
-  <article class="trip-detail">
-    <!-- Hero Section -->
-    <header class="trip-hero">
+  <div class="block-page">
+    <div class="block-grid">
+      <!-- Hero image block -->
       {trip.cover_image_url && (
-        <div class="hero-image">
-          <img src={trip.cover_image_url} alt={trip.title} />
+        <div class="block hero-block">
+          <img src={trip.cover_image_url} alt={trip.title} class="hero-img" />
         </div>
       )}
-      <div class="hero-content">
-        <div class="hero-text">
-          <span class="trip-location-tag">{trip.location}</span>
-          <h1 class="trip-title">{trip.title}</h1>
-          {trip.start_date && (
-            <div class="trip-dates">
-              <time datetime={trip.start_date}>
-                {new Date(trip.start_date).toLocaleDateString('en-AU', {
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric'
-                })}
-              </time>
-              {trip.end_date && (
-                <>
-                  <span> — </span>
-                  <time datetime={trip.end_date}>
-                    {new Date(trip.end_date).toLocaleDateString('en-AU', {
-                      month: 'long',
-                      day: 'numeric'
-                    })}
-                  </time>
-                </>
-              )}
-            </div>
-          )}
-        </div>
-      </div>
-    </header>
 
-    <div class="container-wide">
-      <!-- Description -->
-      {trip.description && (
-        <section class="trip-description">
-          <p>{trip.description}</p>
-        </section>
-      )}
-
-      <!-- Trip Stats -->
-      {stats.photoCount > 0 && (
-        <section class="trip-stats">
-          <div class="stat-card">
-            <span class="stat-number">{stats.photoCount}</span>
-            <span class="stat-label">Photos</span>
+      <!-- Trip info block -->
+      <div class="block info-block">
+        <span class="block-label">{trip.location}</span>
+        <h1 class="block-title">{trip.title}</h1>
+        {trip.start_date && (
+          <div class="trip-dates">
+            <time>{formatDate(trip.start_date)}</time>
+            {trip.end_date && (
+              <span> — {formatDate(trip.end_date)}</span>
+            )}
           </div>
-          
-          {stats.cameras.length > 0 && (
-            <div class="stat-card">
-              <span class="stat-label">Shot with</span>
-              <div class="camera-list">
-                {stats.cameras.map(cam => (
-                  <span class="camera-name">
-                    {cam.camera}
-                    {cam.count > 1 && <span class="camera-count">×{cam.count}</span>}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
-        </section>
+        )}
+        {trip.description && (
+          <p class="trip-description">{trip.description}</p>
+        )}
+      </div>
+
+      <!-- Stats blocks -->
+      {stats.photoCount > 0 && (
+        <div class="block stat-block">
+          <span class="stat-number">{stats.photoCount}</span>
+          <span class="stat-label">Photos</span>
+        </div>
       )}
 
-      <!-- Photo Gallery -->
-      {photos.length > 0 ? (
-        <section class="photos-section">
-          <PhotoGallery photos={photos} client:visible />
-        </section>
-      ) : (
-        <div class="no-photos">
+      {stats.cameras.length > 0 && (
+        <div class="block stat-block">
+          <span class="stat-label">Shot with</span>
+          <div class="camera-list">
+            {stats.cameras.map(cam => (
+              <span class="camera-name">
+                {cam.camera}
+                {cam.count > 1 && <span class="camera-count"> x{cam.count}</span>}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <!-- Photo blocks -->
+      {photos.map((photo, i) => (
+        <div class="block photo-block" style={`animation-delay: ${(i + 2) * 0.08}s`}>
+          <img src={photo.file_url} alt={photo.alt_text || photo.caption || ''} class="photo-img" loading="lazy" />
+          {(photo.caption_override || photo.caption) && (
+            <span class="photo-caption">{photo.caption_override || photo.caption}</span>
+          )}
+        </div>
+      ))}
+
+      {photos.length === 0 && (
+        <div class="block empty-block">
           <p>No photos added to this adventure yet.</p>
         </div>
       )}
 
-      <!-- Back Navigation -->
-      <footer class="trip-footer">
-        <a href="/adventures" class="back-link">← Back to Adventures</a>
-      </footer>
+      <!-- Back nav block -->
+      <a href="/adventures" class="block nav-block">
+        <span class="nav-arrow">&larr;</span>
+        <span class="nav-text">Back to Adventures</span>
+      </a>
     </div>
-  </article>
+  </div>
 </BaseLayout>
 
 <style>
-  .trip-detail {
-    padding-bottom: var(--space-xl);
+  .block-page {
+    padding: 0 1rem 4rem;
+    max-width: 100%;
   }
 
-  /* Hero Section */
-  .trip-hero {
-    position: relative;
-    height: 60vh;
-    min-height: 500px;
-    margin-bottom: var(--space-xl);
+  .block-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 1px;
+    background: var(--color-border);
+    border: 1px solid var(--color-border);
+  }
+
+  .block {
+    background: var(--color-offwhite);
+    padding: 2rem;
+    animation: blockIn 0.5s var(--ease-smooth) backwards;
+    transition: background 0.2s var(--ease-smooth);
+  }
+
+  /* Hero block */
+  .hero-block {
+    grid-column: 1 / -1;
+    padding: 0;
+    max-height: 60vh;
     overflow: hidden;
   }
 
-  .hero-image {
-    position: absolute;
-    top: 0;
-    left: 0;
+  .hero-img {
     width: 100%;
-    height: 100%;
-  }
-
-  .hero-image img {
-    width: 100%;
-    height: 100%;
+    height: 60vh;
     object-fit: cover;
-    filter: brightness(0.7);
   }
 
-  .hero-content {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    padding: var(--space-xl) var(--space-md);
-    background: linear-gradient(to top, rgba(44, 74, 82, 0.95), transparent);
+  /* Info block */
+  .info-block {
+    grid-column: 1 / -1;
+    padding: 3rem 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
   }
 
-  .hero-text {
-    max-width: 72rem;
-    margin: 0 auto;
-  }
-
-  .trip-location-tag {
-    display: inline-block;
-    padding: 0.5rem 1rem;
-    background: var(--color-sand);
+  .block-label {
     font-family: var(--font-mono);
-    font-size: 0.75rem;
-    text-transform: uppercase;
+    font-size: 0.6875rem;
     letter-spacing: 0.15em;
-    color: var(--color-deep);
-    margin-bottom: var(--space-sm);
+    text-transform: uppercase;
+    color: var(--color-hot);
   }
 
-  .trip-title {
-    font-size: clamp(2rem, 5vw, 4rem);
-    color: white;
-    margin-bottom: var(--space-sm);
-    line-height: 1.1;
+  .block-title {
+    font-family: var(--font-display);
+    font-size: clamp(2.5rem, 5vw, 4rem);
+    font-weight: 700;
+    letter-spacing: -0.04em;
+    line-height: 1;
   }
 
   .trip-dates {
     font-family: var(--font-mono);
-    font-size: 0.875rem;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: var(--color-sand);
+    font-size: 0.8125rem;
+    letter-spacing: 0.05em;
+    color: var(--color-stone);
   }
 
-  /* Description */
   .trip-description {
-    max-width: 48rem;
-    margin: 0 auto var(--space-xl);
-    padding: 0 var(--space-md);
-  }
-
-  .trip-description p {
-    font-size: 1.25rem;
+    font-family: var(--font-body);
+    font-size: 1.125rem;
     line-height: 1.7;
-    color: var(--color-deep);
-    text-align: center;
+    color: var(--color-stone);
+    max-width: 42rem;
+    margin: 0.5rem 0 0;
   }
 
-  /* Stats */
-  .trip-stats {
+  /* Stat blocks */
+  .stat-block {
     display: flex;
+    flex-direction: column;
+    align-items: center;
     justify-content: center;
-    gap: var(--space-md);
-    margin-bottom: var(--space-xl);
-    padding: 0 var(--space-md);
-    flex-wrap: wrap;
+    min-height: 160px;
+    text-align: center;
   }
 
-  .stat-card {
-    padding: var(--space-md);
-    background: white;
-    border: 2px solid var(--color-sand);
-    text-align: center;
-    min-width: 200px;
+  .stat-block:hover {
+    background: var(--color-sand);
   }
 
   .stat-number {
-    display: block;
     font-family: var(--font-display);
     font-size: 3rem;
-    font-weight: 600;
-    color: var(--color-ocean);
-    margin-bottom: 0.25rem;
+    font-weight: 700;
+    color: var(--color-hot);
+    line-height: 1;
   }
 
   .stat-label {
-    display: block;
     font-family: var(--font-mono);
-    font-size: 0.75rem;
+    font-size: 0.6875rem;
     text-transform: uppercase;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.12em;
     color: var(--color-stone);
-    margin-bottom: 0.5rem;
+    margin-top: 0.5rem;
   }
 
   .camera-list {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
-    margin-top: var(--space-sm);
+    gap: 0.25rem;
+    margin-top: 0.5rem;
   }
 
   .camera-name {
     font-family: var(--font-body);
-    font-size: 0.875rem;
+    font-size: 0.9375rem;
     color: var(--color-deep);
   }
 
@@ -249,76 +227,122 @@ const stats = getTripStats(trip.id);
     font-family: var(--font-mono);
     font-size: 0.75rem;
     color: var(--color-stone);
-    margin-left: 0.5rem;
   }
 
-  /* Photos Section */
-  .photos-section {
-    margin-bottom: var(--space-xl);
+  /* Photo blocks */
+  .photo-block {
+    padding: 0;
+    position: relative;
+    overflow: hidden;
+    min-height: 280px;
   }
 
-  .no-photos {
-    text-align: center;
-    padding: var(--space-xl);
+  .photo-block:hover {
+    background: var(--color-offwhite);
   }
 
-  .no-photos p {
+  .photo-img {
+    width: 100%;
+    height: 100%;
+    min-height: 280px;
+    object-fit: cover;
+    transition: transform 0.4s var(--ease-smooth);
+  }
+
+  .photo-block:hover .photo-img {
+    transform: scale(1.03);
+  }
+
+  .photo-caption {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 2rem 1.5rem 1rem;
+    background: linear-gradient(to top, rgba(28, 16, 23, 0.7), transparent);
     font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+    color: white;
+    opacity: 0;
+    transition: opacity 0.3s var(--ease-smooth);
+  }
+
+  .photo-block:hover .photo-caption {
+    opacity: 1;
+  }
+
+  /* Nav block */
+  .nav-block {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 2rem;
+    text-decoration: none;
     color: var(--color-stone);
-    font-size: 0.875rem;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
+    cursor: pointer;
   }
 
-  /* Footer */
-  .trip-footer {
-    text-align: center;
-    padding: var(--space-xl) 0;
-    border-top: 1px solid var(--color-sand);
-    margin-top: var(--space-xl);
+  .nav-block:hover {
+    background: var(--color-sand);
+    color: var(--color-hot);
   }
 
-  .back-link {
+  .nav-arrow {
+    font-size: 1.25rem;
+    transition: transform 0.3s var(--ease-smooth);
+  }
+
+  .nav-block:hover .nav-arrow {
+    transform: translateX(-4px);
+  }
+
+  .nav-text {
     font-family: var(--font-display);
     font-size: 0.875rem;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+  }
+
+  .empty-block {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 200px;
+  }
+
+  .empty-block p {
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
     color: var(--color-stone);
-    text-decoration: none;
-    padding: 0.75rem 1.5rem;
-    border: 2px solid var(--color-sand);
-    display: inline-block;
-    transition: all 0.2s var(--ease-editorial);
+    margin: 0;
   }
 
-  .back-link:hover {
-    background: var(--color-sand);
-    color: var(--color-deep);
-    transform: translateY(-2px);
+  @keyframes blockIn {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 
-  @media (max-width: 768px) {
-    .trip-hero {
-      height: 50vh;
-      min-height: 400px;
+  @media (max-width: 640px) {
+    .block-grid {
+      grid-template-columns: 1fr;
     }
 
-    .hero-content {
-      padding: var(--space-md) var(--space-sm);
+    .info-block {
+      padding: 2rem 1.5rem;
     }
 
-    .trip-description p {
-      font-size: 1.125rem;
-    }
-
-    .trip-stats {
-      flex-direction: column;
-      align-items: center;
-    }
-
-    .stat-card {
-      width: 100%;
-      max-width: 300px;
+    .hero-block,
+    .hero-img {
+      height: 40vh;
     }
   }
 </style>
