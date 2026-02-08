@@ -221,7 +221,10 @@ function parseTags(tags: string | null): string[] {
     function updateLetters() {
       if (!scroller) return;
       const panelWidth = scroller.offsetWidth;
-      const progress = Math.min(Math.max(scroller.scrollLeft / panelWidth, 0), 1);
+      const rawProgress = Math.min(Math.max(scroller.scrollLeft / panelWidth, 0), 1);
+
+      // Letters fully assemble at 50% scroll — well before snap kicks in
+      const progress = Math.min(rawProgress * 2, 1);
 
       // Ease the progress for smoother feel
       const eased = 1 - Math.pow(1 - progress, 3);
@@ -522,12 +525,20 @@ function parseTags(tags: string | null): string[] {
     line-height: 0.9;
   }
 
-  /* Gradient text utility */
+  /* Gradient text — animated */
   .gradient-text {
-    background: linear-gradient(135deg, var(--color-hot), var(--color-electric), var(--color-lime));
+    background: linear-gradient(135deg, var(--color-hot), var(--color-electric), var(--color-lime), var(--color-sunset), var(--color-hot));
+    background-size: 300% 300%;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+    animation: gradientShift 6s ease infinite;
+  }
+
+  @keyframes gradientShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
   }
 
   /* Cards track */
