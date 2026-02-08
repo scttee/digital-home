@@ -27,7 +27,7 @@ function formatDate(dateString: string): string {
   });
 }
 
-// Atmospheric story phrases
+// Atmospheric phrases — placed alongside photos
 const vibes = [
   'Salt air and slow mornings',
   'No signal, no worries',
@@ -39,43 +39,36 @@ const vibes = [
   'Time moves different by the water',
 ];
 
-// Build horizontal story: photo panels interleaved with quote panels
-type StoryPanel =
-  | { type: 'photo'; photo: typeof photos[0]; layout: 'full' | 'centered' | 'split-left' | 'split-right' }
-  | { type: 'pair'; left: typeof photos[0]; right: typeof photos[0] }
-  | { type: 'quote'; text: string };
+// Layout presets for photo blocks — each defines size + position + optional quote placement
+// w: width of the block in vw
+// ph: photo height as % of viewport height
+// py: photo vertical position (top, center, bottom)
+// pw: photo width within block (% of block width)
+// px: photo horizontal alignment (left, center, right)
+// quote: where to place a quote relative to photo (above, below, left, right, overlay, none)
+const layoutPresets = [
+  { w: 75, ph: 85, py: 'bottom', pw: 90, px: 'right', quote: 'above' },
+  { w: 50, ph: 55, py: 'top', pw: 80, px: 'left', quote: 'below' },
+  { w: 100, ph: 100, py: 'center', pw: 100, px: 'center', quote: 'overlay' },
+  { w: 45, ph: 50, py: 'center', pw: 70, px: 'center', quote: 'right' },
+  { w: 60, ph: 70, py: 'top', pw: 85, px: 'right', quote: 'below' },
+  { w: 90, ph: 90, py: 'bottom', pw: 100, px: 'left', quote: 'overlay' },
+  { w: 40, ph: 45, py: 'bottom', pw: 75, px: 'left', quote: 'above' },
+  { w: 70, ph: 80, py: 'center', pw: 60, px: 'center', quote: 'below' },
+];
 
-const panels: StoryPanel[] = [];
-let vibeIdx = 0;
+// Build story blocks
+type StoryBlock = {
+  photo: typeof photos[0];
+  preset: typeof layoutPresets[0];
+  vibe: string | null;
+};
 
-// Layout cycle for variety
-const photoLayouts = ['full', 'split-left', 'full', 'centered', 'split-right'] as const;
-let layoutIdx = 0;
-let photoIdx = 0;
-
-while (photoIdx < photos.length) {
-  const layout = photoLayouts[layoutIdx % photoLayouts.length];
-
-  // Try to pair photos at the 'centered' slot
-  if (layout === 'centered' && photoIdx + 1 < photos.length) {
-    panels.push({ type: 'pair', left: photos[photoIdx], right: photos[photoIdx + 1] });
-    photoIdx += 2;
-  } else {
-    panels.push({ type: 'photo', photo: photos[photoIdx], layout: layout === 'centered' ? 'full' : layout });
-    photoIdx++;
-  }
-
-  // Insert a quote panel between photo panels
-  if (vibeIdx < vibes.length && photoIdx < photos.length) {
-    panels.push({ type: 'quote', text: vibes[vibeIdx] });
-    vibeIdx++;
-  }
-
-  layoutIdx++;
-}
-
-// Total panels: hero + description(optional) + story panels + closing panel
-const totalDots = 1 + (trip.description ? 1 : 0) + panels.length + 1;
+const storyBlocks: StoryBlock[] = photos.map((photo, i) => ({
+  photo,
+  preset: layoutPresets[i % layoutPresets.length],
+  vibe: i < vibes.length ? vibes[i] : null,
+}));
 ---
 
 <!DOCTYPE html>
@@ -100,15 +93,15 @@ const totalDots = 1 + (trip.description ? 1 : 0) + panels.length + 1;
     <div class="progress-fill" id="progressFill"></div>
   </div>
 
-  <!-- Horizontal scroll container -->
-  <div class="scroller" id="scroller">
+  <!-- Continuous horizontal scroll -->
+  <div class="river" id="river">
 
-    <!-- Hero panel -->
-    <section class="panel hero-panel">
+    <!-- Hero block -->
+    <div class="river-block hero-block">
       {trip.cover_image_url && (
         <img src={trip.cover_image_url} alt={trip.title} class="hero-bg" />
       )}
-      <div class="hero-overlay">
+      <div class="hero-content">
         <span class="hero-location">{trip.location}</span>
         <h1 class="hero-title">{trip.title}</h1>
         {trip.start_date && (
@@ -117,109 +110,51 @@ const totalDots = 1 + (trip.description ? 1 : 0) + panels.length + 1;
             {trip.end_date && <span> — {formatDate(trip.end_date)}</span>}
           </div>
         )}
+        {trip.description && (
+          <p class="hero-desc">{trip.description}</p>
+        )}
       </div>
       <div class="scroll-hint">
-        <span class="hint-text">Swipe to explore</span>
+        <span class="hint-text">Scroll to explore</span>
         <span class="hint-arrow">→</span>
       </div>
-    </section>
+    </div>
 
-    <!-- Description panel (if exists) -->
-    {trip.description && (
-      <section class="panel text-panel">
-        <div class="text-panel-inner">
-          <p class="description-text">{trip.description}</p>
-        </div>
-      </section>
-    )}
-
-    <!-- Story panels -->
-    {panels.map((panel) => {
-      if (panel.type === 'quote') {
-        return (
-          <section class="panel quote-panel">
-            <p class="quote-text">{panel.text}</p>
-          </section>
-        );
-      }
-
-      if (panel.type === 'pair') {
-        return (
-          <section class="panel pair-panel">
-            <div class="pair-img">
-              <img src={panel.left.file_url} alt={panel.left.alt_text || panel.left.caption || ''} />
-              {(panel.left.caption_override || panel.left.caption) && (
-                <span class="pair-caption">{panel.left.caption_override || panel.left.caption}</span>
-              )}
-            </div>
-            <div class="pair-img">
-              <img src={panel.right.file_url} alt={panel.right.alt_text || panel.right.caption || ''} />
-              {(panel.right.caption_override || panel.right.caption) && (
-                <span class="pair-caption">{panel.right.caption_override || panel.right.caption}</span>
-              )}
-            </div>
-          </section>
-        );
-      }
-
-      if (panel.layout === 'full') {
-        return (
-          <section class="panel photo-panel photo-full">
-            <img src={panel.photo.file_url} alt={panel.photo.alt_text || panel.photo.caption || ''} class="photo-bg" />
-            {(panel.photo.caption_override || panel.photo.caption) && (
-              <span class="photo-caption-overlay">{panel.photo.caption_override || panel.photo.caption}</span>
-            )}
-          </section>
-        );
-      }
-
-      if (panel.layout === 'split-left') {
-        return (
-          <section class="panel split-panel split-left">
-            <div class="split-img">
-              <img src={panel.photo.file_url} alt={panel.photo.alt_text || panel.photo.caption || ''} />
-            </div>
-            <div class="split-text">
-              {(panel.photo.caption_override || panel.photo.caption) && (
-                <p class="split-caption">{panel.photo.caption_override || panel.photo.caption}</p>
-              )}
-            </div>
-          </section>
-        );
-      }
-
-      if (panel.layout === 'split-right') {
-        return (
-          <section class="panel split-panel split-right">
-            <div class="split-text">
-              {(panel.photo.caption_override || panel.photo.caption) && (
-                <p class="split-caption">{panel.photo.caption_override || panel.photo.caption}</p>
-              )}
-            </div>
-            <div class="split-img">
-              <img src={panel.photo.file_url} alt={panel.photo.alt_text || panel.photo.caption || ''} />
-            </div>
-          </section>
-        );
-      }
-
-      // Fallback: centered
-      return (
-        <section class="panel photo-panel photo-centered">
-          <div class="centered-wrap">
-            <img src={panel.photo.file_url} alt={panel.photo.alt_text || panel.photo.caption || ''} />
-          </div>
-          {(panel.photo.caption_override || panel.photo.caption) && (
-            <span class="photo-caption-overlay">{panel.photo.caption_override || panel.photo.caption}</span>
+    <!-- Photo blocks -->
+    {storyBlocks.map((block, i) => (
+      <div
+        class={`river-block photo-block reveal`}
+        style={`width: ${block.preset.w}vw;`}
+        data-py={block.preset.py}
+        data-px={block.preset.px}
+      >
+        <div
+          class={`photo-frame`}
+          style={`height: ${block.preset.ph}vh; width: ${block.preset.pw}%;`}
+        >
+          <img
+            src={block.photo.file_url}
+            alt={block.photo.alt_text || block.photo.caption || ''}
+            loading="lazy"
+          />
+          {block.preset.quote === 'overlay' && block.vibe && (
+            <span class="vibe-overlay">{block.vibe}</span>
           )}
-        </section>
-      );
-    })}
+        </div>
 
-    <!-- Closing panel -->
-    <section class="panel closing-panel">
+        {block.vibe && block.preset.quote !== 'overlay' && (
+          <p class={`vibe-text vibe-${block.preset.quote}`}>{block.vibe}</p>
+        )}
+
+        {(block.photo.caption_override || block.photo.caption) && block.preset.quote !== 'overlay' && (
+          <span class="photo-caption">{block.photo.caption_override || block.photo.caption}</span>
+        )}
+      </div>
+    ))}
+
+    <!-- Closing block -->
+    <div class="river-block closing-block">
       <div class="closing-inner">
-        <p class="closing-vibe">{vibes[vibeIdx < vibes.length ? vibeIdx : vibes.length - 1]}</p>
         {stats.cameras.length > 0 && (
           <div class="closing-camera">
             <span class="cam-label">Shot with</span>
@@ -233,53 +168,53 @@ const totalDots = 1 + (trip.description ? 1 : 0) + panels.length + 1;
           <span>All Adventures</span>
         </a>
       </div>
-    </section>
+    </div>
 
   </div>
 
   <script>
-    const scroller = document.getElementById('scroller');
+    const river = document.getElementById('river');
     const progressFill = document.getElementById('progressFill');
     const hintEl = document.querySelector('.scroll-hint') as HTMLElement;
 
-    if (scroller && progressFill) {
-      scroller.addEventListener('scroll', () => {
-        const maxScroll = scroller.scrollWidth - scroller.clientWidth;
-        const progress = maxScroll > 0 ? scroller.scrollLeft / maxScroll : 0;
+    if (river && progressFill) {
+      river.addEventListener('scroll', () => {
+        const maxScroll = river.scrollWidth - river.clientWidth;
+        const progress = maxScroll > 0 ? river.scrollLeft / maxScroll : 0;
         progressFill.style.transform = `scaleX(${progress})`;
 
         // Fade out scroll hint
         if (hintEl) {
-          const fade = Math.max(1 - (scroller.scrollLeft / (scroller.clientWidth * 0.3)), 0);
+          const fade = Math.max(1 - (river.scrollLeft / (river.clientWidth * 0.25)), 0);
           hintEl.style.opacity = String(fade);
         }
       }, { passive: true });
     }
 
-    // Reveal panels as they enter viewport
-    const panels = document.querySelectorAll('.panel');
-
+    // Reveal blocks as they scroll into view
+    const blocks = document.querySelectorAll('.reveal');
     const observer = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
-          entry.target.classList.add('in-view');
+          entry.target.classList.add('visible');
         }
       });
     }, {
-      root: scroller,
-      threshold: 0.3
+      root: river,
+      threshold: 0.1,
+      rootMargin: '0px 100px 0px 0px'
     });
 
-    panels.forEach(p => observer.observe(p));
+    blocks.forEach(b => observer.observe(b));
 
-    // Keyboard navigation
+    // Keyboard nav
     document.addEventListener('keydown', (e) => {
-      if (!scroller) return;
-      const panelWidth = scroller.clientWidth;
+      if (!river) return;
+      const step = window.innerWidth * 0.6;
       if (e.key === 'ArrowRight') {
-        scroller.scrollBy({ left: panelWidth, behavior: 'smooth' });
+        river.scrollBy({ left: step, behavior: 'smooth' });
       } else if (e.key === 'ArrowLeft') {
-        scroller.scrollBy({ left: -panelWidth, behavior: 'smooth' });
+        river.scrollBy({ left: -step, behavior: 'smooth' });
       }
     });
   </script>
@@ -367,7 +302,7 @@ const totalDots = 1 + (trip.description ? 1 : 0) + panels.length + 1;
     left: 0;
     right: 0;
     height: 3px;
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.08);
     z-index: 100;
   }
 
@@ -376,48 +311,55 @@ const totalDots = 1 + (trip.description ? 1 : 0) + panels.length + 1;
     background: linear-gradient(90deg, var(--color-hot), var(--color-electric), var(--color-lime));
     transform-origin: left;
     transform: scaleX(0);
-    transition: transform 0.1s linear;
+    transition: transform 0.15s linear;
   }
 
-  /* ---- Horizontal scroller ---- */
-  .scroller {
+  /* ---- River: continuous horizontal scroll ---- */
+  .river {
     display: flex;
+    align-items: stretch;
     height: 100vh;
     overflow-x: auto;
     overflow-y: hidden;
-    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
+    gap: 6vw;
+    padding-right: 4vw;
   }
 
-  .scroller::-webkit-scrollbar {
+  .river::-webkit-scrollbar {
     display: none;
   }
 
-  /* ---- Panel base ---- */
-  .panel {
-    flex: 0 0 100vw;
-    width: 100vw;
+  /* ---- Block base ---- */
+  .river-block {
+    flex-shrink: 0;
     height: 100vh;
-    scroll-snap-align: start;
     position: relative;
-    overflow: hidden;
+    display: flex;
+    flex-direction: column;
   }
 
-  /* Reveal animation */
-  .panel:not(.hero-panel) {
+  /* ---- Reveal ---- */
+  .reveal {
     opacity: 0;
-    transition: opacity 0.6s var(--ease-smooth);
+    transform: translateX(40px);
+    transition: opacity 0.7s var(--ease-smooth), transform 0.7s var(--ease-smooth);
   }
 
-  .panel.in-view {
+  .reveal.visible {
     opacity: 1;
+    transform: translateX(0);
   }
 
-  /* ---- Hero panel ---- */
-  .hero-panel {
+  /* ---- Hero ---- */
+  .hero-block {
+    width: 100vw;
+    flex-shrink: 0;
     display: flex;
     align-items: flex-end;
+    justify-content: flex-start;
   }
 
   .hero-bg {
@@ -428,15 +370,15 @@ const totalDots = 1 + (trip.description ? 1 : 0) + panels.length + 1;
     object-fit: cover;
   }
 
-  .hero-overlay {
+  .hero-content {
     position: relative;
     z-index: 2;
     padding: 4rem 3rem;
     width: 100%;
     background: linear-gradient(
       to top,
-      rgba(28, 16, 23, 0.9) 0%,
-      rgba(28, 16, 23, 0.4) 50%,
+      rgba(28, 16, 23, 0.92) 0%,
+      rgba(28, 16, 23, 0.5) 45%,
       transparent 100%
     );
     display: flex;
@@ -469,6 +411,15 @@ const totalDots = 1 + (trip.description ? 1 : 0) + panels.length + 1;
     color: rgba(255, 255, 255, 0.6);
   }
 
+  .hero-desc {
+    font-family: var(--font-body);
+    font-size: 1rem;
+    line-height: 1.5;
+    color: rgba(255, 255, 255, 0.5);
+    margin: 0.5rem 0 0;
+    max-width: 32rem;
+  }
+
   .scroll-hint {
     position: absolute;
     bottom: 2.5rem;
@@ -498,190 +449,133 @@ const totalDots = 1 + (trip.description ? 1 : 0) + panels.length + 1;
     50% { transform: translateX(6px); }
   }
 
-  /* ---- Text / description panel ---- */
-  .text-panel {
-    display: flex;
-    align-items: center;
+  /* ---- Photo blocks ---- */
+  .photo-block {
+    position: relative;
+    padding: 2vh 0;
+  }
+
+  /* Vertical alignment */
+  .photo-block[data-py="top"] {
+    justify-content: flex-start;
+  }
+
+  .photo-block[data-py="center"] {
     justify-content: center;
-    background: var(--color-offwhite);
   }
 
-  .text-panel-inner {
-    max-width: 32rem;
-    padding: 3rem;
+  .photo-block[data-py="bottom"] {
+    justify-content: flex-end;
   }
 
-  .description-text {
-    font-family: var(--font-body);
-    font-size: clamp(1.25rem, 2.5vw, 1.75rem);
-    line-height: 1.6;
-    color: var(--color-deep);
-    margin: 0;
-    text-align: center;
+  /* Horizontal alignment of inner content */
+  .photo-block[data-px="left"] {
+    align-items: flex-start;
   }
 
-  /* ---- Quote panel ---- */
-  .quote-panel {
-    display: flex;
+  .photo-block[data-px="center"] {
     align-items: center;
-    justify-content: center;
-    background: var(--color-deep);
-    padding: 3rem;
   }
 
-  .quote-text {
-    font-family: var(--font-body);
-    font-size: clamp(2rem, 5vw, 3.5rem);
-    font-style: italic;
-    font-weight: 400;
-    line-height: 1.2;
-    color: rgba(255, 255, 255, 0.6);
-    text-align: center;
-    margin: 0;
-    max-width: 20rem;
-  }
-
-  /* ---- Full bleed photo panel ---- */
-  .photo-full {
-    display: flex;
+  .photo-block[data-px="right"] {
     align-items: flex-end;
   }
 
-  .photo-bg {
-    position: absolute;
-    inset: 0;
+  /* ---- Photo frame ---- */
+  .photo-frame {
+    position: relative;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+
+  .photo-frame img {
     width: 100%;
     height: 100%;
     object-fit: cover;
-  }
-
-  .photo-caption-overlay {
-    position: relative;
-    z-index: 2;
     display: block;
-    padding: 2rem 3rem;
-    width: 100%;
-    background: linear-gradient(to top, rgba(28, 16, 23, 0.7), transparent);
-    font-family: var(--font-mono);
-    font-size: 0.75rem;
-    letter-spacing: 0.04em;
-    color: rgba(255, 255, 255, 0.8);
+    transition: transform 0.6s var(--ease-smooth);
   }
 
-  /* ---- Photo centered panel ---- */
-  .photo-centered {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: var(--color-deep);
+  .photo-frame:hover img {
+    transform: scale(1.02);
   }
 
-  .centered-wrap {
-    width: 70%;
-    max-height: 80vh;
-    overflow: hidden;
-  }
-
-  .centered-wrap img {
-    width: 100%;
-    height: auto;
-    display: block;
-  }
-
-  /* ---- Split panel (photo + text side by side) ---- */
-  .split-panel {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-  }
-
-  .split-img {
-    overflow: hidden;
-  }
-
-  .split-img img {
-    width: 100%;
-    height: 100vh;
-    object-fit: cover;
-    display: block;
-  }
-
-  .split-text {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 3rem;
-    background: var(--color-deep);
-  }
-
-  .split-caption {
-    font-family: var(--font-body);
-    font-size: clamp(1.125rem, 2vw, 1.5rem);
-    font-style: italic;
-    line-height: 1.5;
-    color: rgba(255, 255, 255, 0.7);
-    margin: 0;
-    max-width: 18rem;
-  }
-
-  /* ---- Pair panel (two photos stacked) ---- */
-  .pair-panel {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 4px;
-    background: var(--color-deep);
-  }
-
-  .pair-img {
-    position: relative;
-    overflow: hidden;
-  }
-
-  .pair-img img {
-    width: 100%;
-    height: 100vh;
-    object-fit: cover;
-    display: block;
-  }
-
-  .pair-caption {
+  /* ---- Vibe / quote text ---- */
+  .vibe-overlay {
     position: absolute;
     bottom: 0;
     left: 0;
     right: 0;
-    padding: 2rem 1.5rem 1rem;
-    background: linear-gradient(to top, rgba(28, 16, 23, 0.6), transparent);
+    padding: 3rem 2.5rem 2rem;
+    background: linear-gradient(to top, rgba(28, 16, 23, 0.75), transparent);
+    font-family: var(--font-body);
+    font-size: clamp(1.125rem, 2vw, 1.75rem);
+    font-style: italic;
+    line-height: 1.3;
+    color: rgba(255, 255, 255, 0.85);
+  }
+
+  .vibe-text {
+    font-family: var(--font-body);
+    font-style: italic;
+    line-height: 1.3;
+    color: rgba(255, 255, 255, 0.5);
+    margin: 0;
+    max-width: 16rem;
+  }
+
+  .vibe-above {
+    font-size: clamp(1rem, 1.8vw, 1.375rem);
+    margin-bottom: 1.5rem;
+    order: -1;
+  }
+
+  .vibe-below {
+    font-size: clamp(1rem, 1.8vw, 1.375rem);
+    margin-top: 1.5rem;
+  }
+
+  .vibe-right {
+    position: absolute;
+    right: -12vw;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: clamp(0.875rem, 1.5vw, 1.125rem);
+    width: 10vw;
+  }
+
+  .vibe-left {
+    position: absolute;
+    left: -12vw;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: clamp(0.875rem, 1.5vw, 1.125rem);
+    width: 10vw;
+  }
+
+  /* ---- Photo caption ---- */
+  .photo-caption {
     font-family: var(--font-mono);
     font-size: 0.6875rem;
     letter-spacing: 0.04em;
-    color: rgba(255, 255, 255, 0.8);
+    color: rgba(255, 255, 255, 0.35);
+    margin-top: 0.75rem;
   }
 
-  /* ---- Closing panel ---- */
-  .closing-panel {
+  /* ---- Closing ---- */
+  .closing-block {
+    width: 40vw;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: var(--color-offwhite);
   }
 
   .closing-inner {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 2.5rem;
+    gap: 2rem;
     text-align: center;
-    padding: 3rem;
-  }
-
-  .closing-vibe {
-    font-family: var(--font-body);
-    font-size: clamp(1.5rem, 3vw, 2.5rem);
-    font-style: italic;
-    line-height: 1.3;
-    color: var(--color-deep);
-    margin: 0;
-    max-width: 20rem;
-    opacity: 0.6;
   }
 
   .closing-camera {
@@ -695,14 +589,14 @@ const totalDots = 1 + (trip.description ? 1 : 0) + panels.length + 1;
     font-size: 0.6875rem;
     text-transform: uppercase;
     letter-spacing: 0.12em;
-    color: var(--color-stone);
+    color: rgba(255, 255, 255, 0.4);
   }
 
   .cam-name {
     font-family: var(--font-display);
     font-size: 0.875rem;
     font-weight: 500;
-    color: var(--color-deep);
+    color: rgba(255, 255, 255, 0.6);
   }
 
   .closing-back {
@@ -712,10 +606,10 @@ const totalDots = 1 + (trip.description ? 1 : 0) + panels.length + 1;
     font-family: var(--font-display);
     font-size: 0.875rem;
     font-weight: 500;
-    color: var(--color-stone);
+    color: rgba(255, 255, 255, 0.5);
     text-decoration: none;
     padding: 0.75rem 1.5rem;
-    border: 1.5px solid var(--color-border);
+    border: 1.5px solid rgba(255, 255, 255, 0.15);
     border-radius: 2rem;
     transition: all 0.2s;
   }
@@ -727,6 +621,10 @@ const totalDots = 1 + (trip.description ? 1 : 0) + panels.length + 1;
 
   /* ---- Mobile ---- */
   @media (max-width: 768px) {
+    .river {
+      gap: 4vw;
+    }
+
     .story-nav {
       padding: 1rem 1.25rem;
     }
@@ -738,7 +636,7 @@ const totalDots = 1 + (trip.description ? 1 : 0) + panels.length + 1;
       font-size: 1rem;
     }
 
-    .hero-overlay {
+    .hero-content {
       padding: 3rem 1.5rem;
     }
 
@@ -747,40 +645,19 @@ const totalDots = 1 + (trip.description ? 1 : 0) + panels.length + 1;
       bottom: 2rem;
     }
 
-    .text-panel-inner {
-      padding: 2rem 1.5rem;
+    .photo-block {
+      min-width: 75vw;
     }
 
-    .quote-panel {
-      padding: 2rem;
+    .vibe-right,
+    .vibe-left {
+      position: static;
+      transform: none;
+      width: auto;
     }
 
-    /* Split becomes full photo on mobile */
-    .split-panel {
-      grid-template-columns: 1fr;
-    }
-
-    .split-text {
-      display: none;
-    }
-
-    .split-img img {
-      height: 100vh;
-    }
-
-    /* Pair becomes stacked vertically, each half height */
-    .pair-panel {
-      grid-template-columns: 1fr;
-      grid-template-rows: 1fr 1fr;
-      gap: 2px;
-    }
-
-    .pair-img img {
-      height: 50vh;
-    }
-
-    .closing-inner {
-      padding: 2rem 1.5rem;
+    .closing-block {
+      width: 80vw;
     }
   }
 </style>
