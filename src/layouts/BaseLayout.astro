@@ -58,7 +58,7 @@ const {
     border-bottom: 1px solid var(--color-border);
     position: sticky;
     top: 0;
-    background: rgba(250, 250, 249, 0.8);
+    background: rgba(254, 252, 251, 0.8);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     z-index: 100;
@@ -67,7 +67,7 @@ const {
 
   @media (prefers-color-scheme: dark) {
     .site-header {
-      background: rgba(10, 10, 10, 0.8);
+      background: rgba(17, 11, 15, 0.8);
     }
   }
 
@@ -111,13 +111,13 @@ const {
     bottom: -4px;
     left: 0;
     width: 0;
-    height: 1px;
-    background: var(--color-deep);
+    height: 2px;
+    background: var(--color-hot, var(--color-accent));
     transition: width 0.3s var(--ease-smooth);
   }
 
   .nav-links a:hover {
-    color: var(--color-deep);
+    color: var(--color-hot, var(--color-accent));
   }
 
   .nav-links a:hover::after {
