@@ -27,7 +27,7 @@ function formatDate(dateString: string): string {
   });
 }
 
-// Atmospheric filler phrases
+// Atmospheric story phrases
 const vibes = [
   'Salt air and slow mornings',
   'No signal, no worries',
@@ -39,42 +39,58 @@ const vibes = [
   'Time moves different by the water',
 ];
 
-// Pick vibes based on photo count to fill the grid
-function getVibesForGaps(photoCount: number): string[] {
-  const cols = 3; // approximate grid columns
-  const totalCells = Math.ceil((photoCount + 2) / cols) * cols; // round up to fill rows
-  const gaps = totalCells - photoCount;
-  return vibes.slice(0, Math.max(gaps, 1));
+// Build scrolling story sequence
+type StoryItem =
+  | { type: 'full'; photo: typeof photos[0] }
+  | { type: 'contained'; photo: typeof photos[0] }
+  | { type: 'offset-left'; photo: typeof photos[0] }
+  | { type: 'offset-right'; photo: typeof photos[0] }
+  | { type: 'pair'; left: typeof photos[0]; right: typeof photos[0] }
+  | { type: 'quote'; text: string };
+
+const storyItems: StoryItem[] = [];
+let vibeIdx = 0;
+
+// Layout cycle: full → quote → contained → quote → pair → quote → offset → quote → repeat
+const layouts = ['full', 'offset-left', 'pair', 'contained', 'offset-right'] as const;
+let layoutIdx = 0;
+let photoIdx = 0;
+
+while (photoIdx < photos.length) {
+  const layout = layouts[layoutIdx % layouts.length];
+
+  if (layout === 'pair' && photoIdx + 1 < photos.length) {
+    storyItems.push({ type: 'pair', left: photos[photoIdx], right: photos[photoIdx + 1] });
+    photoIdx += 2;
+  } else if (layout === 'pair') {
+    // Only one photo left, make it full
+    storyItems.push({ type: 'full', photo: photos[photoIdx] });
+    photoIdx++;
+  } else {
+    storyItems.push({ type: layout, photo: photos[photoIdx] });
+    photoIdx++;
+  }
+
+  // Insert quote between photo blocks
+  if (vibeIdx < vibes.length && photoIdx < photos.length) {
+    storyItems.push({ type: 'quote', text: vibes[vibeIdx] });
+    vibeIdx++;
+  }
+
+  layoutIdx++;
 }
 
-const fillerVibes = getVibesForGaps(photos.length);
-
-// Interleave photos with vibe blocks
-type GridItem = { type: 'photo'; data: typeof photos[0]; index: number } | { type: 'vibe'; text: string };
-const gridItems: GridItem[] = [];
-let vibeIndex = 0;
-
-photos.forEach((photo, i) => {
-  gridItems.push({ type: 'photo', data: photo, index: i });
-  // Insert a vibe after every 3rd photo if we have vibes left
-  if ((i + 1) % 3 === 0 && vibeIndex < fillerVibes.length) {
-    gridItems.push({ type: 'vibe', text: fillerVibes[vibeIndex] });
-    vibeIndex++;
-  }
-});
-
-// Add remaining vibes at the end
-while (vibeIndex < fillerVibes.length) {
-  gridItems.push({ type: 'vibe', text: fillerVibes[vibeIndex] });
-  vibeIndex++;
+// Closing quote
+if (vibeIdx < vibes.length) {
+  storyItems.push({ type: 'quote', text: vibes[vibeIdx] });
 }
 ---
 
 <BaseLayout title={`${trip.title} — Adventures`}>
-  <div class="adventure-page">
-    <!-- Hero -->
+  <div class="story-page">
+    <!-- Hero — full viewport -->
     {trip.cover_image_url && (
-      <div class="hero">
+      <section class="story-hero">
         <img src={trip.cover_image_url} alt={trip.title} class="hero-img" />
         <div class="hero-overlay">
           <span class="hero-location">{trip.location}</span>
@@ -86,11 +102,15 @@ while (vibeIndex < fillerVibes.length) {
             </div>
           )}
         </div>
-      </div>
+        <div class="scroll-hint">
+          <span class="scroll-hint-text">Scroll to explore</span>
+          <span class="scroll-hint-arrow">↓</span>
+        </div>
+      </section>
     )}
 
     {!trip.cover_image_url && (
-      <div class="info-header">
+      <section class="story-hero story-hero-text">
         <span class="hero-location">{trip.location}</span>
         <h1 class="hero-title">{trip.title}</h1>
         {trip.start_date && (
@@ -99,41 +119,109 @@ while (vibeIndex < fillerVibes.length) {
             {trip.end_date && <span> — {formatDate(trip.end_date)}</span>}
           </div>
         )}
-      </div>
+      </section>
     )}
 
     {trip.description && (
-      <div class="description-bar">
-        <p>{trip.description}</p>
-      </div>
+      <section class="story-intro reveal">
+        <p class="intro-text">{trip.description}</p>
+      </section>
     )}
 
-    <!-- Photo grid — no borders, immersive -->
-    <div class="photo-grid">
-      {gridItems.map((item) =>
-        item.type === 'photo' ? (
-          <div class="grid-photo" style={`animation-delay: ${item.index * 0.06}s`}>
-            <img src={item.data.file_url} alt={item.data.alt_text || item.data.caption || ''} loading="lazy" />
-            {(item.data.caption_override || item.data.caption) && (
-              <span class="grid-caption">{item.data.caption_override || item.data.caption}</span>
+    <!-- Scrolling story -->
+    {storyItems.map((item) => {
+      if (item.type === 'quote') {
+        return (
+          <section class="story-quote reveal">
+            <p class="quote-text">{item.text}</p>
+          </section>
+        );
+      }
+
+      if (item.type === 'full') {
+        return (
+          <section class="story-full reveal">
+            <div class="story-img-wrap">
+              <img src={item.photo.file_url} alt={item.photo.alt_text || item.photo.caption || ''} loading="lazy" />
+            </div>
+            {(item.photo.caption_override || item.photo.caption) && (
+              <p class="story-caption">{item.photo.caption_override || item.photo.caption}</p>
             )}
-          </div>
-        ) : (
-          <div class="grid-vibe">
-            <p class="vibe-text">{item.text}</p>
-          </div>
-        )
-      )}
-    </div>
+          </section>
+        );
+      }
+
+      if (item.type === 'contained') {
+        return (
+          <section class="story-contained reveal">
+            <div class="story-img-wrap">
+              <img src={item.photo.file_url} alt={item.photo.alt_text || item.photo.caption || ''} loading="lazy" />
+            </div>
+            {(item.photo.caption_override || item.photo.caption) && (
+              <p class="story-caption">{item.photo.caption_override || item.photo.caption}</p>
+            )}
+          </section>
+        );
+      }
+
+      if (item.type === 'offset-left') {
+        return (
+          <section class="story-offset story-offset-left reveal">
+            <div class="story-img-wrap">
+              <img src={item.photo.file_url} alt={item.photo.alt_text || item.photo.caption || ''} loading="lazy" />
+            </div>
+            {(item.photo.caption_override || item.photo.caption) && (
+              <p class="story-caption">{item.photo.caption_override || item.photo.caption}</p>
+            )}
+          </section>
+        );
+      }
+
+      if (item.type === 'offset-right') {
+        return (
+          <section class="story-offset story-offset-right reveal">
+            <div class="story-img-wrap">
+              <img src={item.photo.file_url} alt={item.photo.alt_text || item.photo.caption || ''} loading="lazy" />
+            </div>
+            {(item.photo.caption_override || item.photo.caption) && (
+              <p class="story-caption">{item.photo.caption_override || item.photo.caption}</p>
+            )}
+          </section>
+        );
+      }
+
+      if (item.type === 'pair') {
+        return (
+          <section class="story-pair reveal">
+            <div class="pair-item">
+              <div class="story-img-wrap">
+                <img src={item.left.file_url} alt={item.left.alt_text || item.left.caption || ''} loading="lazy" />
+              </div>
+              {(item.left.caption_override || item.left.caption) && (
+                <p class="story-caption">{item.left.caption_override || item.left.caption}</p>
+              )}
+            </div>
+            <div class="pair-item">
+              <div class="story-img-wrap">
+                <img src={item.right.file_url} alt={item.right.alt_text || item.right.caption || ''} loading="lazy" />
+              </div>
+              {(item.right.caption_override || item.right.caption) && (
+                <p class="story-caption">{item.right.caption_override || item.right.caption}</p>
+              )}
+            </div>
+          </section>
+        );
+      }
+    })}
 
     {photos.length === 0 && (
-      <div class="empty-state">
+      <section class="story-empty">
         <p>No photos added to this adventure yet.</p>
-      </div>
+      </section>
     )}
 
-    <!-- Footer bar -->
-    <div class="adventure-footer">
+    <!-- Footer -->
+    <footer class="story-footer reveal">
       {stats.cameras.length > 0 && (
         <div class="camera-info">
           <span class="camera-label">Shot with</span>
@@ -147,29 +235,81 @@ while (vibeIndex < fillerVibes.length) {
       )}
       <a href="/adventures" class="back-link">
         <span>&larr;</span>
-        <span>Back to Adventures</span>
+        <span>All Adventures</span>
       </a>
-    </div>
+    </footer>
   </div>
 </BaseLayout>
 
-<style>
-  .adventure-page {
-    margin: 0;
+<script>
+  // Scroll-driven reveal for story sections
+  const reveals = document.querySelectorAll('.reveal');
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+      }
+    });
+  }, {
+    threshold: 0.15,
+    rootMargin: '0px 0px -60px 0px'
+  });
+
+  reveals.forEach(el => observer.observe(el));
+
+  // Parallax on hero image
+  const hero = document.querySelector('.story-hero');
+  const heroImg = document.querySelector('.hero-img') as HTMLImageElement;
+
+  if (hero && heroImg) {
+    window.addEventListener('scroll', () => {
+      const rect = hero.getBoundingClientRect();
+      if (rect.bottom > 0) {
+        const progress = -rect.top / rect.height;
+        heroImg.style.transform = `scale(1.1) translateY(${progress * 40}px)`;
+      }
+    }, { passive: true });
   }
 
-  /* Hero — full bleed */
-  .hero {
+  // Fade out scroll hint
+  const scrollHint = document.querySelector('.scroll-hint') as HTMLElement;
+  if (scrollHint) {
+    window.addEventListener('scroll', () => {
+      const scrollY = window.scrollY;
+      scrollHint.style.opacity = String(Math.max(1 - scrollY / 200, 0));
+    }, { passive: true });
+  }
+</script>
+
+<style>
+  .story-page {
+    margin: 0;
+    overflow-x: hidden;
+  }
+
+  /* ---- Hero ---- */
+  .story-hero {
     position: relative;
     width: 100%;
-    height: 70vh;
+    height: 100vh;
     overflow: hidden;
+  }
+
+  .story-hero-text {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-end;
+    padding: 4rem 2.5rem;
   }
 
   .hero-img {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    transform: scale(1.1);
+    will-change: transform;
   }
 
   .hero-overlay {
@@ -177,133 +317,256 @@ while (vibeIndex < fillerVibes.length) {
     bottom: 0;
     left: 0;
     right: 0;
-    padding: 4rem 2.5rem 2.5rem;
-    background: linear-gradient(to top, rgba(28, 16, 23, 0.85) 0%, rgba(28, 16, 23, 0.4) 50%, transparent 100%);
+    padding: 6rem 3rem 3.5rem;
+    background: linear-gradient(
+      to top,
+      rgba(28, 16, 23, 0.9) 0%,
+      rgba(28, 16, 23, 0.5) 40%,
+      transparent 100%
+    );
     display: flex;
     flex-direction: column;
-    gap: 0.375rem;
+    gap: 0.5rem;
   }
 
   .hero-location {
     font-family: var(--font-mono);
-    font-size: 0.6875rem;
-    letter-spacing: 0.2em;
+    font-size: 0.75rem;
+    letter-spacing: 0.25em;
     text-transform: uppercase;
     color: var(--color-hot);
   }
 
   .hero-title {
     font-family: var(--font-display);
-    font-size: clamp(2.5rem, 6vw, 4.5rem);
+    font-size: clamp(3rem, 8vw, 6rem);
     font-weight: 700;
     letter-spacing: -0.04em;
-    line-height: 1;
+    line-height: 0.95;
     color: white;
     margin: 0;
   }
 
   .hero-dates {
     font-family: var(--font-mono);
-    font-size: 0.75rem;
-    letter-spacing: 0.05em;
-    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.8125rem;
+    letter-spacing: 0.06em;
+    color: rgba(255, 255, 255, 0.6);
+    margin-top: 0.25rem;
   }
 
-  .info-header {
-    padding: 3rem 2.5rem 2rem;
+  .scroll-hint {
+    position: absolute;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
     display: flex;
     flex-direction: column;
-    gap: 0.375rem;
+    align-items: center;
+    gap: 0.5rem;
+    color: rgba(255, 255, 255, 0.5);
+    transition: opacity 0.3s;
   }
 
-  .description-bar {
-    padding: 1.25rem 2.5rem;
-    border-bottom: 1px solid var(--color-border);
+  .scroll-hint-text {
+    font-family: var(--font-mono);
+    font-size: 0.625rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
   }
 
-  .description-bar p {
+  .scroll-hint-arrow {
+    font-size: 1.25rem;
+    animation: bounceDown 2s var(--ease-smooth) infinite;
+  }
+
+  @keyframes bounceDown {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(6px); }
+  }
+
+  /* ---- Reveal animation ---- */
+  .reveal {
+    opacity: 0;
+    transform: translateY(40px);
+    transition: opacity 0.8s var(--ease-smooth), transform 0.8s var(--ease-smooth);
+  }
+
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* ---- Intro text ---- */
+  .story-intro {
+    padding: 6rem 2rem;
+    display: flex;
+    justify-content: center;
+  }
+
+  .intro-text {
     font-family: var(--font-body);
-    font-size: 1.125rem;
+    font-size: clamp(1.25rem, 2.5vw, 1.75rem);
     line-height: 1.6;
     color: var(--color-stone);
+    max-width: 36rem;
+    text-align: center;
     margin: 0;
-    max-width: 42rem;
   }
 
-  /* Photo grid — no borders, edge to edge */
-  .photo-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-    gap: 0;
+  /* ---- Quote sections ---- */
+  .story-quote {
+    padding: 8rem 2rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
 
-  .grid-photo {
-    position: relative;
-    overflow: hidden;
-    min-height: 320px;
-    animation: fadeIn 0.5s var(--ease-smooth) backwards;
+  .quote-text {
+    font-family: var(--font-body);
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    font-style: italic;
+    font-weight: 400;
+    line-height: 1.2;
+    color: var(--color-deep);
+    text-align: center;
+    margin: 0;
+    max-width: 28rem;
+    opacity: 0.7;
   }
 
-  .grid-photo img {
+  /* ---- Full bleed photo ---- */
+  .story-full {
+    padding: 0;
     width: 100%;
-    height: 100%;
-    min-height: 320px;
+  }
+
+  .story-full .story-img-wrap {
+    width: 100%;
+    overflow: hidden;
+  }
+
+  .story-full .story-img-wrap img {
+    width: 100%;
+    height: 80vh;
     object-fit: cover;
-    transition: transform 0.4s var(--ease-smooth);
     display: block;
   }
 
-  .grid-photo:hover img {
-    transform: scale(1.03);
+  .story-full .story-caption {
+    padding: 1rem 3rem;
   }
 
-  .grid-caption {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    padding: 2.5rem 1.5rem 1.25rem;
-    background: linear-gradient(to top, rgba(28, 16, 23, 0.7), transparent);
-    font-family: var(--font-mono);
-    font-size: 0.6875rem;
-    letter-spacing: 0.06em;
-    color: white;
-    opacity: 0;
-    transition: opacity 0.3s var(--ease-smooth);
-  }
-
-  .grid-photo:hover .grid-caption {
-    opacity: 1;
-  }
-
-  /* Vibe / quote blocks */
-  .grid-vibe {
+  /* ---- Contained photo ---- */
+  .story-contained {
+    padding: 2rem;
     display: flex;
+    flex-direction: column;
     align-items: center;
-    justify-content: center;
-    min-height: 320px;
-    padding: 2.5rem;
-    background: var(--color-deep);
-    animation: fadeIn 0.5s var(--ease-smooth) backwards;
   }
 
-  .vibe-text {
-    font-family: var(--font-body);
-    font-size: clamp(1.5rem, 3vw, 2rem);
-    font-style: italic;
-    line-height: 1.3;
-    color: rgba(255, 255, 255, 0.6);
-    text-align: center;
+  .story-contained .story-img-wrap {
+    width: 100%;
+    max-width: 56rem;
+    overflow: hidden;
+  }
+
+  .story-contained .story-img-wrap img {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  /* ---- Offset photos ---- */
+  .story-offset {
+    padding: 2rem 0;
+  }
+
+  .story-offset .story-img-wrap {
+    width: 72%;
+    overflow: hidden;
+  }
+
+  .story-offset .story-img-wrap img {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  .story-offset-left .story-img-wrap {
+    margin-left: 0;
+  }
+
+  .story-offset-left .story-caption {
+    padding-left: 3rem;
+  }
+
+  .story-offset-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+  }
+
+  .story-offset-right .story-img-wrap {
+    margin-right: 0;
+  }
+
+  .story-offset-right .story-caption {
+    padding-right: 3rem;
+    text-align: right;
+  }
+
+  /* ---- Photo pair ---- */
+  .story-pair {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    padding: 2rem;
+    max-width: 72rem;
+    margin: 0 auto;
+  }
+
+  .pair-item {
+    overflow: hidden;
+  }
+
+  .pair-item .story-img-wrap img {
+    width: 100%;
+    height: 50vh;
+    object-fit: cover;
+    display: block;
+  }
+
+  /* ---- Shared caption style ---- */
+  .story-caption {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.04em;
+    color: var(--color-stone);
     margin: 0;
-    max-width: 16rem;
+    padding: 0.875rem 2rem;
   }
 
-  /* Footer */
-  .adventure-footer {
+  /* ---- Image hover ---- */
+  .story-img-wrap {
+    overflow: hidden;
+  }
+
+  .story-img-wrap img {
+    transition: transform 0.6s var(--ease-smooth);
+  }
+
+  .story-img-wrap:hover img {
+    transform: scale(1.02);
+  }
+
+  /* ---- Footer ---- */
+  .story-footer {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1.5rem 2.5rem;
+    padding: 3rem;
+    margin-top: 4rem;
     border-top: 1px solid var(--color-border);
     flex-wrap: wrap;
     gap: 1rem;
@@ -352,49 +615,69 @@ while (vibeIndex < fillerVibes.length) {
     color: var(--color-hot);
   }
 
-  .empty-state {
-    padding: 4rem 2.5rem;
+  /* ---- Empty state ---- */
+  .story-empty {
+    padding: 8rem 2rem;
     text-align: center;
   }
 
-  .empty-state p {
+  .story-empty p {
     font-family: var(--font-mono);
     font-size: 0.8125rem;
     color: var(--color-stone);
     margin: 0;
   }
 
-  @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-  }
-
-  @media (max-width: 640px) {
-    .photo-grid {
-      grid-template-columns: 1fr;
+  /* ---- Mobile ---- */
+  @media (max-width: 768px) {
+    .story-hero {
+      height: 85vh;
     }
-
-    .hero { height: 50vh; }
 
     .hero-overlay {
-      padding: 3rem 1.5rem 1.5rem;
+      padding: 4rem 1.5rem 2rem;
     }
 
-    .description-bar {
-      padding: 1rem 1.5rem;
+    .story-intro {
+      padding: 4rem 1.5rem;
     }
 
-    .adventure-footer {
-      padding: 1.25rem 1.5rem;
+    .story-quote {
+      padding: 5rem 1.5rem;
     }
 
-    .grid-photo,
-    .grid-photo img {
-      min-height: 260px;
+    .story-full .story-img-wrap img {
+      height: 60vh;
     }
 
-    .grid-vibe {
-      min-height: 200px;
+    .story-contained {
+      padding: 1rem;
+    }
+
+    .story-offset .story-img-wrap {
+      width: 85%;
+    }
+
+    .story-pair {
+      grid-template-columns: 1fr;
+      padding: 1rem;
+    }
+
+    .pair-item .story-img-wrap img {
+      height: 40vh;
+    }
+
+    .story-caption {
+      padding: 0.75rem 1.5rem;
+    }
+
+    .story-full .story-caption {
+      padding: 0.75rem 1.5rem;
+    }
+
+    .story-footer {
+      padding: 2rem 1.5rem;
+      margin-top: 2rem;
     }
   }
 </style>
