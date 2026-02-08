@@ -1,5 +1,5 @@
 ---
-import BaseLayout from '../../layouts/BaseLayout.astro';
+import '../../styles/global.css';
 import { getTripBySlug, getTripPhotos, getTripStats, getTrips } from '../../lib/photography-static';
 
 export async function getStaticPaths() {
@@ -39,78 +39,76 @@ const vibes = [
   'Time moves different by the water',
 ];
 
-// Build scrolling story sequence
-type StoryItem =
-  | { type: 'full'; photo: typeof photos[0] }
-  | { type: 'contained'; photo: typeof photos[0] }
-  | { type: 'offset-left'; photo: typeof photos[0] }
-  | { type: 'offset-right'; photo: typeof photos[0] }
+// Build horizontal story: photo panels interleaved with quote panels
+type StoryPanel =
+  | { type: 'photo'; photo: typeof photos[0]; layout: 'full' | 'centered' | 'split-left' | 'split-right' }
   | { type: 'pair'; left: typeof photos[0]; right: typeof photos[0] }
   | { type: 'quote'; text: string };
 
-const storyItems: StoryItem[] = [];
+const panels: StoryPanel[] = [];
 let vibeIdx = 0;
 
-// Layout cycle: full → quote → contained → quote → pair → quote → offset → quote → repeat
-const layouts = ['full', 'offset-left', 'pair', 'contained', 'offset-right'] as const;
+// Layout cycle for variety
+const photoLayouts = ['full', 'split-left', 'full', 'centered', 'split-right'] as const;
 let layoutIdx = 0;
 let photoIdx = 0;
 
 while (photoIdx < photos.length) {
-  const layout = layouts[layoutIdx % layouts.length];
+  const layout = photoLayouts[layoutIdx % photoLayouts.length];
 
-  if (layout === 'pair' && photoIdx + 1 < photos.length) {
-    storyItems.push({ type: 'pair', left: photos[photoIdx], right: photos[photoIdx + 1] });
+  // Try to pair photos at the 'centered' slot
+  if (layout === 'centered' && photoIdx + 1 < photos.length) {
+    panels.push({ type: 'pair', left: photos[photoIdx], right: photos[photoIdx + 1] });
     photoIdx += 2;
-  } else if (layout === 'pair') {
-    // Only one photo left, make it full
-    storyItems.push({ type: 'full', photo: photos[photoIdx] });
-    photoIdx++;
   } else {
-    storyItems.push({ type: layout, photo: photos[photoIdx] });
+    panels.push({ type: 'photo', photo: photos[photoIdx], layout: layout === 'centered' ? 'full' : layout });
     photoIdx++;
   }
 
-  // Insert quote between photo blocks
+  // Insert a quote panel between photo panels
   if (vibeIdx < vibes.length && photoIdx < photos.length) {
-    storyItems.push({ type: 'quote', text: vibes[vibeIdx] });
+    panels.push({ type: 'quote', text: vibes[vibeIdx] });
     vibeIdx++;
   }
 
   layoutIdx++;
 }
 
-// Closing quote
-if (vibeIdx < vibes.length) {
-  storyItems.push({ type: 'quote', text: vibes[vibeIdx] });
-}
+// Total panels: hero + description(optional) + story panels + closing panel
+const totalDots = 1 + (trip.description ? 1 : 0) + panels.length + 1;
 ---
 
-<BaseLayout title={`${trip.title} — Adventures`}>
-  <div class="story-page">
-    <!-- Hero — full viewport -->
-    {trip.cover_image_url && (
-      <section class="story-hero">
-        <img src={trip.cover_image_url} alt={trip.title} class="hero-img" />
-        <div class="hero-overlay">
-          <span class="hero-location">{trip.location}</span>
-          <h1 class="hero-title">{trip.title}</h1>
-          {trip.start_date && (
-            <div class="hero-dates">
-              <time>{formatDate(trip.start_date)}</time>
-              {trip.end_date && <span> — {formatDate(trip.end_date)}</span>}
-            </div>
-          )}
-        </div>
-        <div class="scroll-hint">
-          <span class="scroll-hint-text">Scroll to explore</span>
-          <span class="scroll-hint-arrow">↓</span>
-        </div>
-      </section>
-    )}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content={trip.description || `${trip.title} — an adventure`}>
+  <title>{trip.title} — Adventures</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+</head>
+<body class="story-body">
 
-    {!trip.cover_image_url && (
-      <section class="story-hero story-hero-text">
+  <!-- Fixed nav -->
+  <nav class="story-nav">
+    <a href="/adventures" class="nav-back" aria-label="Back to Adventures">&larr;</a>
+    <a href="/" class="nav-logo">SS</a>
+  </nav>
+
+  <!-- Progress bar -->
+  <div class="progress-track">
+    <div class="progress-fill" id="progressFill"></div>
+  </div>
+
+  <!-- Horizontal scroll container -->
+  <div class="scroller" id="scroller">
+
+    <!-- Hero panel -->
+    <section class="panel hero-panel">
+      {trip.cover_image_url && (
+        <img src={trip.cover_image_url} alt={trip.title} class="hero-bg" />
+      )}
+      <div class="hero-overlay">
         <span class="hero-location">{trip.location}</span>
         <h1 class="hero-title">{trip.title}</h1>
         {trip.start_date && (
@@ -119,209 +117,326 @@ if (vibeIdx < vibes.length) {
             {trip.end_date && <span> — {formatDate(trip.end_date)}</span>}
           </div>
         )}
-      </section>
-    )}
+      </div>
+      <div class="scroll-hint">
+        <span class="hint-text">Swipe to explore</span>
+        <span class="hint-arrow">→</span>
+      </div>
+    </section>
 
+    <!-- Description panel (if exists) -->
     {trip.description && (
-      <section class="story-intro reveal">
-        <p class="intro-text">{trip.description}</p>
+      <section class="panel text-panel">
+        <div class="text-panel-inner">
+          <p class="description-text">{trip.description}</p>
+        </div>
       </section>
     )}
 
-    <!-- Scrolling story -->
-    {storyItems.map((item) => {
-      if (item.type === 'quote') {
+    <!-- Story panels -->
+    {panels.map((panel) => {
+      if (panel.type === 'quote') {
         return (
-          <section class="story-quote reveal">
-            <p class="quote-text">{item.text}</p>
+          <section class="panel quote-panel">
+            <p class="quote-text">{panel.text}</p>
           </section>
         );
       }
 
-      if (item.type === 'full') {
+      if (panel.type === 'pair') {
         return (
-          <section class="story-full reveal">
-            <div class="story-img-wrap">
-              <img src={item.photo.file_url} alt={item.photo.alt_text || item.photo.caption || ''} loading="lazy" />
-            </div>
-            {(item.photo.caption_override || item.photo.caption) && (
-              <p class="story-caption">{item.photo.caption_override || item.photo.caption}</p>
-            )}
-          </section>
-        );
-      }
-
-      if (item.type === 'contained') {
-        return (
-          <section class="story-contained reveal">
-            <div class="story-img-wrap">
-              <img src={item.photo.file_url} alt={item.photo.alt_text || item.photo.caption || ''} loading="lazy" />
-            </div>
-            {(item.photo.caption_override || item.photo.caption) && (
-              <p class="story-caption">{item.photo.caption_override || item.photo.caption}</p>
-            )}
-          </section>
-        );
-      }
-
-      if (item.type === 'offset-left') {
-        return (
-          <section class="story-offset story-offset-left reveal">
-            <div class="story-img-wrap">
-              <img src={item.photo.file_url} alt={item.photo.alt_text || item.photo.caption || ''} loading="lazy" />
-            </div>
-            {(item.photo.caption_override || item.photo.caption) && (
-              <p class="story-caption">{item.photo.caption_override || item.photo.caption}</p>
-            )}
-          </section>
-        );
-      }
-
-      if (item.type === 'offset-right') {
-        return (
-          <section class="story-offset story-offset-right reveal">
-            <div class="story-img-wrap">
-              <img src={item.photo.file_url} alt={item.photo.alt_text || item.photo.caption || ''} loading="lazy" />
-            </div>
-            {(item.photo.caption_override || item.photo.caption) && (
-              <p class="story-caption">{item.photo.caption_override || item.photo.caption}</p>
-            )}
-          </section>
-        );
-      }
-
-      if (item.type === 'pair') {
-        return (
-          <section class="story-pair reveal">
-            <div class="pair-item">
-              <div class="story-img-wrap">
-                <img src={item.left.file_url} alt={item.left.alt_text || item.left.caption || ''} loading="lazy" />
-              </div>
-              {(item.left.caption_override || item.left.caption) && (
-                <p class="story-caption">{item.left.caption_override || item.left.caption}</p>
+          <section class="panel pair-panel">
+            <div class="pair-img">
+              <img src={panel.left.file_url} alt={panel.left.alt_text || panel.left.caption || ''} />
+              {(panel.left.caption_override || panel.left.caption) && (
+                <span class="pair-caption">{panel.left.caption_override || panel.left.caption}</span>
               )}
             </div>
-            <div class="pair-item">
-              <div class="story-img-wrap">
-                <img src={item.right.file_url} alt={item.right.alt_text || item.right.caption || ''} loading="lazy" />
-              </div>
-              {(item.right.caption_override || item.right.caption) && (
-                <p class="story-caption">{item.right.caption_override || item.right.caption}</p>
+            <div class="pair-img">
+              <img src={panel.right.file_url} alt={panel.right.alt_text || panel.right.caption || ''} />
+              {(panel.right.caption_override || panel.right.caption) && (
+                <span class="pair-caption">{panel.right.caption_override || panel.right.caption}</span>
               )}
             </div>
           </section>
         );
       }
+
+      if (panel.layout === 'full') {
+        return (
+          <section class="panel photo-panel photo-full">
+            <img src={panel.photo.file_url} alt={panel.photo.alt_text || panel.photo.caption || ''} class="photo-bg" />
+            {(panel.photo.caption_override || panel.photo.caption) && (
+              <span class="photo-caption-overlay">{panel.photo.caption_override || panel.photo.caption}</span>
+            )}
+          </section>
+        );
+      }
+
+      if (panel.layout === 'split-left') {
+        return (
+          <section class="panel split-panel split-left">
+            <div class="split-img">
+              <img src={panel.photo.file_url} alt={panel.photo.alt_text || panel.photo.caption || ''} />
+            </div>
+            <div class="split-text">
+              {(panel.photo.caption_override || panel.photo.caption) && (
+                <p class="split-caption">{panel.photo.caption_override || panel.photo.caption}</p>
+              )}
+            </div>
+          </section>
+        );
+      }
+
+      if (panel.layout === 'split-right') {
+        return (
+          <section class="panel split-panel split-right">
+            <div class="split-text">
+              {(panel.photo.caption_override || panel.photo.caption) && (
+                <p class="split-caption">{panel.photo.caption_override || panel.photo.caption}</p>
+              )}
+            </div>
+            <div class="split-img">
+              <img src={panel.photo.file_url} alt={panel.photo.alt_text || panel.photo.caption || ''} />
+            </div>
+          </section>
+        );
+      }
+
+      // Fallback: centered
+      return (
+        <section class="panel photo-panel photo-centered">
+          <div class="centered-wrap">
+            <img src={panel.photo.file_url} alt={panel.photo.alt_text || panel.photo.caption || ''} />
+          </div>
+          {(panel.photo.caption_override || panel.photo.caption) && (
+            <span class="photo-caption-overlay">{panel.photo.caption_override || panel.photo.caption}</span>
+          )}
+        </section>
+      );
     })}
 
-    {photos.length === 0 && (
-      <section class="story-empty">
-        <p>No photos added to this adventure yet.</p>
-      </section>
-    )}
+    <!-- Closing panel -->
+    <section class="panel closing-panel">
+      <div class="closing-inner">
+        <p class="closing-vibe">{vibes[vibeIdx < vibes.length ? vibeIdx : vibes.length - 1]}</p>
+        {stats.cameras.length > 0 && (
+          <div class="closing-camera">
+            <span class="cam-label">Shot with</span>
+            {stats.cameras.map(cam => (
+              <span class="cam-name">{cam.camera}</span>
+            ))}
+          </div>
+        )}
+        <a href="/adventures" class="closing-back">
+          <span>&larr;</span>
+          <span>All Adventures</span>
+        </a>
+      </div>
+    </section>
 
-    <!-- Footer -->
-    <footer class="story-footer reveal">
-      {stats.cameras.length > 0 && (
-        <div class="camera-info">
-          <span class="camera-label">Shot with</span>
-          {stats.cameras.map(cam => (
-            <span class="camera-name">
-              {cam.camera}
-              {cam.count > 1 && <span class="camera-count"> x{cam.count}</span>}
-            </span>
-          ))}
-        </div>
-      )}
-      <a href="/adventures" class="back-link">
-        <span>&larr;</span>
-        <span>All Adventures</span>
-      </a>
-    </footer>
   </div>
-</BaseLayout>
 
-<script>
-  // Scroll-driven reveal for story sections
-  const reveals = document.querySelectorAll('.reveal');
+  <script>
+    const scroller = document.getElementById('scroller');
+    const progressFill = document.getElementById('progressFill');
+    const hintEl = document.querySelector('.scroll-hint') as HTMLElement;
 
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('visible');
+    if (scroller && progressFill) {
+      scroller.addEventListener('scroll', () => {
+        const maxScroll = scroller.scrollWidth - scroller.clientWidth;
+        const progress = maxScroll > 0 ? scroller.scrollLeft / maxScroll : 0;
+        progressFill.style.transform = `scaleX(${progress})`;
+
+        // Fade out scroll hint
+        if (hintEl) {
+          const fade = Math.max(1 - (scroller.scrollLeft / (scroller.clientWidth * 0.3)), 0);
+          hintEl.style.opacity = String(fade);
+        }
+      }, { passive: true });
+    }
+
+    // Reveal panels as they enter viewport
+    const panels = document.querySelectorAll('.panel');
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('in-view');
+        }
+      });
+    }, {
+      root: scroller,
+      threshold: 0.3
+    });
+
+    panels.forEach(p => observer.observe(p));
+
+    // Keyboard navigation
+    document.addEventListener('keydown', (e) => {
+      if (!scroller) return;
+      const panelWidth = scroller.clientWidth;
+      if (e.key === 'ArrowRight') {
+        scroller.scrollBy({ left: panelWidth, behavior: 'smooth' });
+      } else if (e.key === 'ArrowLeft') {
+        scroller.scrollBy({ left: -panelWidth, behavior: 'smooth' });
       }
     });
-  }, {
-    threshold: 0.15,
-    rootMargin: '0px 0px -60px 0px'
-  });
+  </script>
 
-  reveals.forEach(el => observer.observe(el));
-
-  // Parallax on hero image
-  const hero = document.querySelector('.story-hero');
-  const heroImg = document.querySelector('.hero-img') as HTMLImageElement;
-
-  if (hero && heroImg) {
-    window.addEventListener('scroll', () => {
-      const rect = hero.getBoundingClientRect();
-      if (rect.bottom > 0) {
-        const progress = -rect.top / rect.height;
-        heroImg.style.transform = `scale(1.1) translateY(${progress * 40}px)`;
-      }
-    }, { passive: true });
-  }
-
-  // Fade out scroll hint
-  const scrollHint = document.querySelector('.scroll-hint') as HTMLElement;
-  if (scrollHint) {
-    window.addEventListener('scroll', () => {
-      const scrollY = window.scrollY;
-      scrollHint.style.opacity = String(Math.max(1 - scrollY / 200, 0));
-    }, { passive: true });
-  }
-</script>
+</body>
+</html>
 
 <style>
-  .story-page {
+  /* ---- Base ---- */
+  .story-body {
     margin: 0;
-    overflow-x: hidden;
-  }
-
-  /* ---- Hero ---- */
-  .story-hero {
-    position: relative;
-    width: 100%;
-    height: 100vh;
+    padding: 0;
     overflow: hidden;
+    height: 100vh;
+    background: var(--color-deep);
   }
 
-  .story-hero-text {
+  /* ---- Fixed nav ---- */
+  .story-nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
     display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    justify-content: flex-end;
-    padding: 4rem 2.5rem;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.25rem 2rem;
+    z-index: 100;
+    pointer-events: none;
   }
 
-  .hero-img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transform: scale(1.1);
-    will-change: transform;
+  .story-nav a {
+    pointer-events: all;
   }
 
-  .hero-overlay {
-    position: absolute;
+  .nav-back {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    color: white;
+    text-decoration: none;
+    width: 2.5rem;
+    height: 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: rgba(28, 16, 23, 0.4);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    transition: background 0.2s, color 0.2s;
+  }
+
+  .nav-back:hover {
+    background: var(--color-hot);
+    color: white;
+  }
+
+  .nav-logo {
+    font-family: var(--font-display);
+    font-size: 1.125rem;
+    font-weight: 700;
+    letter-spacing: -0.04em;
+    color: white;
+    text-decoration: none;
+    width: 2.5rem;
+    height: 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: rgba(28, 16, 23, 0.4);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    transition: background 0.2s, color 0.2s;
+  }
+
+  .nav-logo:hover {
+    color: var(--color-hot);
+  }
+
+  /* ---- Progress bar ---- */
+  .progress-track {
+    position: fixed;
     bottom: 0;
     left: 0;
     right: 0;
-    padding: 6rem 3rem 3.5rem;
+    height: 3px;
+    background: rgba(255, 255, 255, 0.1);
+    z-index: 100;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--color-hot), var(--color-electric), var(--color-lime));
+    transform-origin: left;
+    transform: scaleX(0);
+    transition: transform 0.1s linear;
+  }
+
+  /* ---- Horizontal scroller ---- */
+  .scroller {
+    display: flex;
+    height: 100vh;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .scroller::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* ---- Panel base ---- */
+  .panel {
+    flex: 0 0 100vw;
+    width: 100vw;
+    height: 100vh;
+    scroll-snap-align: start;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Reveal animation */
+  .panel:not(.hero-panel) {
+    opacity: 0;
+    transition: opacity 0.6s var(--ease-smooth);
+  }
+
+  .panel.in-view {
+    opacity: 1;
+  }
+
+  /* ---- Hero panel ---- */
+  .hero-panel {
+    display: flex;
+    align-items: flex-end;
+  }
+
+  .hero-bg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .hero-overlay {
+    position: relative;
+    z-index: 2;
+    padding: 4rem 3rem;
+    width: 100%;
     background: linear-gradient(
       to top,
       rgba(28, 16, 23, 0.9) 0%,
-      rgba(28, 16, 23, 0.5) 40%,
+      rgba(28, 16, 23, 0.4) 50%,
       transparent 100%
     );
     display: flex;
@@ -352,74 +467,66 @@ if (vibeIdx < vibes.length) {
     font-size: 0.8125rem;
     letter-spacing: 0.06em;
     color: rgba(255, 255, 255, 0.6);
-    margin-top: 0.25rem;
   }
 
   .scroll-hint {
     position: absolute;
-    bottom: 2rem;
-    left: 50%;
-    transform: translateX(-50%);
+    bottom: 2.5rem;
+    right: 3rem;
+    z-index: 3;
     display: flex;
-    flex-direction: column;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.75rem;
     color: rgba(255, 255, 255, 0.5);
     transition: opacity 0.3s;
   }
 
-  .scroll-hint-text {
+  .hint-text {
     font-family: var(--font-mono);
     font-size: 0.625rem;
     letter-spacing: 0.2em;
     text-transform: uppercase;
   }
 
-  .scroll-hint-arrow {
+  .hint-arrow {
     font-size: 1.25rem;
-    animation: bounceDown 2s var(--ease-smooth) infinite;
+    animation: slideRight 2s var(--ease-smooth) infinite;
   }
 
-  @keyframes bounceDown {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(6px); }
+  @keyframes slideRight {
+    0%, 100% { transform: translateX(0); }
+    50% { transform: translateX(6px); }
   }
 
-  /* ---- Reveal animation ---- */
-  .reveal {
-    opacity: 0;
-    transform: translateY(40px);
-    transition: opacity 0.8s var(--ease-smooth), transform 0.8s var(--ease-smooth);
-  }
-
-  .reveal.visible {
-    opacity: 1;
-    transform: translateY(0);
-  }
-
-  /* ---- Intro text ---- */
-  .story-intro {
-    padding: 6rem 2rem;
+  /* ---- Text / description panel ---- */
+  .text-panel {
     display: flex;
+    align-items: center;
     justify-content: center;
+    background: var(--color-offwhite);
   }
 
-  .intro-text {
+  .text-panel-inner {
+    max-width: 32rem;
+    padding: 3rem;
+  }
+
+  .description-text {
     font-family: var(--font-body);
     font-size: clamp(1.25rem, 2.5vw, 1.75rem);
     line-height: 1.6;
-    color: var(--color-stone);
-    max-width: 36rem;
-    text-align: center;
+    color: var(--color-deep);
     margin: 0;
+    text-align: center;
   }
 
-  /* ---- Quote sections ---- */
-  .story-quote {
-    padding: 8rem 2rem;
+  /* ---- Quote panel ---- */
+  .quote-panel {
     display: flex;
-    justify-content: center;
     align-items: center;
+    justify-content: center;
+    background: var(--color-deep);
+    padding: 3rem;
   }
 
   .quote-text {
@@ -428,157 +535,162 @@ if (vibeIdx < vibes.length) {
     font-style: italic;
     font-weight: 400;
     line-height: 1.2;
-    color: var(--color-deep);
+    color: rgba(255, 255, 255, 0.6);
     text-align: center;
     margin: 0;
-    max-width: 28rem;
-    opacity: 0.7;
+    max-width: 20rem;
   }
 
-  /* ---- Full bleed photo ---- */
-  .story-full {
-    padding: 0;
-    width: 100%;
-  }
-
-  .story-full .story-img-wrap {
-    width: 100%;
-    overflow: hidden;
-  }
-
-  .story-full .story-img-wrap img {
-    width: 100%;
-    height: 80vh;
-    object-fit: cover;
-    display: block;
-  }
-
-  .story-full .story-caption {
-    padding: 1rem 3rem;
-  }
-
-  /* ---- Contained photo ---- */
-  .story-contained {
-    padding: 2rem;
+  /* ---- Full bleed photo panel ---- */
+  .photo-full {
     display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .story-contained .story-img-wrap {
-    width: 100%;
-    max-width: 56rem;
-    overflow: hidden;
-  }
-
-  .story-contained .story-img-wrap img {
-    width: 100%;
-    height: auto;
-    display: block;
-  }
-
-  /* ---- Offset photos ---- */
-  .story-offset {
-    padding: 2rem 0;
-  }
-
-  .story-offset .story-img-wrap {
-    width: 72%;
-    overflow: hidden;
-  }
-
-  .story-offset .story-img-wrap img {
-    width: 100%;
-    height: auto;
-    display: block;
-  }
-
-  .story-offset-left .story-img-wrap {
-    margin-left: 0;
-  }
-
-  .story-offset-left .story-caption {
-    padding-left: 3rem;
-  }
-
-  .story-offset-right {
-    display: flex;
-    flex-direction: column;
     align-items: flex-end;
   }
 
-  .story-offset-right .story-img-wrap {
-    margin-right: 0;
+  .photo-bg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
   }
 
-  .story-offset-right .story-caption {
-    padding-right: 3rem;
-    text-align: right;
+  .photo-caption-overlay {
+    position: relative;
+    z-index: 2;
+    display: block;
+    padding: 2rem 3rem;
+    width: 100%;
+    background: linear-gradient(to top, rgba(28, 16, 23, 0.7), transparent);
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.04em;
+    color: rgba(255, 255, 255, 0.8);
   }
 
-  /* ---- Photo pair ---- */
-  .story-pair {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1rem;
-    padding: 2rem;
-    max-width: 72rem;
-    margin: 0 auto;
+  /* ---- Photo centered panel ---- */
+  .photo-centered {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--color-deep);
   }
 
-  .pair-item {
+  .centered-wrap {
+    width: 70%;
+    max-height: 80vh;
     overflow: hidden;
   }
 
-  .pair-item .story-img-wrap img {
+  .centered-wrap img {
     width: 100%;
-    height: 50vh;
+    height: auto;
+    display: block;
+  }
+
+  /* ---- Split panel (photo + text side by side) ---- */
+  .split-panel {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .split-img {
+    overflow: hidden;
+  }
+
+  .split-img img {
+    width: 100%;
+    height: 100vh;
     object-fit: cover;
     display: block;
   }
 
-  /* ---- Shared caption style ---- */
-  .story-caption {
-    font-family: var(--font-mono);
-    font-size: 0.75rem;
-    letter-spacing: 0.04em;
-    color: var(--color-stone);
-    margin: 0;
-    padding: 0.875rem 2rem;
+  .split-text {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem;
+    background: var(--color-deep);
   }
 
-  /* ---- Image hover ---- */
-  .story-img-wrap {
+  .split-caption {
+    font-family: var(--font-body);
+    font-size: clamp(1.125rem, 2vw, 1.5rem);
+    font-style: italic;
+    line-height: 1.5;
+    color: rgba(255, 255, 255, 0.7);
+    margin: 0;
+    max-width: 18rem;
+  }
+
+  /* ---- Pair panel (two photos stacked) ---- */
+  .pair-panel {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px;
+    background: var(--color-deep);
+  }
+
+  .pair-img {
+    position: relative;
     overflow: hidden;
   }
 
-  .story-img-wrap img {
-    transition: transform 0.6s var(--ease-smooth);
+  .pair-img img {
+    width: 100%;
+    height: 100vh;
+    object-fit: cover;
+    display: block;
   }
 
-  .story-img-wrap:hover img {
-    transform: scale(1.02);
+  .pair-caption {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 2rem 1.5rem 1rem;
+    background: linear-gradient(to top, rgba(28, 16, 23, 0.6), transparent);
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.04em;
+    color: rgba(255, 255, 255, 0.8);
   }
 
-  /* ---- Footer ---- */
-  .story-footer {
+  /* ---- Closing panel ---- */
+  .closing-panel {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    padding: 3rem;
-    margin-top: 4rem;
-    border-top: 1px solid var(--color-border);
-    flex-wrap: wrap;
-    gap: 1rem;
+    justify-content: center;
+    background: var(--color-offwhite);
   }
 
-  .camera-info {
+  .closing-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2.5rem;
+    text-align: center;
+    padding: 3rem;
+  }
+
+  .closing-vibe {
+    font-family: var(--font-body);
+    font-size: clamp(1.5rem, 3vw, 2.5rem);
+    font-style: italic;
+    line-height: 1.3;
+    color: var(--color-deep);
+    margin: 0;
+    max-width: 20rem;
+    opacity: 0.6;
+  }
+
+  .closing-camera {
     display: flex;
     align-items: center;
     gap: 0.75rem;
   }
 
-  .camera-label {
+  .cam-label {
     font-family: var(--font-mono);
     font-size: 0.6875rem;
     text-transform: uppercase;
@@ -586,98 +698,89 @@ if (vibeIdx < vibes.length) {
     color: var(--color-stone);
   }
 
-  .camera-name {
+  .cam-name {
     font-family: var(--font-display);
     font-size: 0.875rem;
     font-weight: 500;
     color: var(--color-deep);
   }
 
-  .camera-count {
-    font-family: var(--font-mono);
-    font-size: 0.6875rem;
-    color: var(--color-stone);
-  }
-
-  .back-link {
+  .closing-back {
     display: flex;
     align-items: center;
     gap: 0.5rem;
     font-family: var(--font-display);
-    font-size: 0.8125rem;
+    font-size: 0.875rem;
     font-weight: 500;
     color: var(--color-stone);
     text-decoration: none;
-    transition: color 0.2s;
+    padding: 0.75rem 1.5rem;
+    border: 1.5px solid var(--color-border);
+    border-radius: 2rem;
+    transition: all 0.2s;
   }
 
-  .back-link:hover {
+  .closing-back:hover {
     color: var(--color-hot);
-  }
-
-  /* ---- Empty state ---- */
-  .story-empty {
-    padding: 8rem 2rem;
-    text-align: center;
-  }
-
-  .story-empty p {
-    font-family: var(--font-mono);
-    font-size: 0.8125rem;
-    color: var(--color-stone);
-    margin: 0;
+    border-color: var(--color-hot);
   }
 
   /* ---- Mobile ---- */
   @media (max-width: 768px) {
-    .story-hero {
-      height: 85vh;
+    .story-nav {
+      padding: 1rem 1.25rem;
+    }
+
+    .nav-back,
+    .nav-logo {
+      width: 2.25rem;
+      height: 2.25rem;
+      font-size: 1rem;
     }
 
     .hero-overlay {
-      padding: 4rem 1.5rem 2rem;
+      padding: 3rem 1.5rem;
     }
 
-    .story-intro {
-      padding: 4rem 1.5rem;
+    .scroll-hint {
+      right: 1.5rem;
+      bottom: 2rem;
     }
 
-    .story-quote {
-      padding: 5rem 1.5rem;
-    }
-
-    .story-full .story-img-wrap img {
-      height: 60vh;
-    }
-
-    .story-contained {
-      padding: 1rem;
-    }
-
-    .story-offset .story-img-wrap {
-      width: 85%;
-    }
-
-    .story-pair {
-      grid-template-columns: 1fr;
-      padding: 1rem;
-    }
-
-    .pair-item .story-img-wrap img {
-      height: 40vh;
-    }
-
-    .story-caption {
-      padding: 0.75rem 1.5rem;
-    }
-
-    .story-full .story-caption {
-      padding: 0.75rem 1.5rem;
-    }
-
-    .story-footer {
+    .text-panel-inner {
       padding: 2rem 1.5rem;
-      margin-top: 2rem;
+    }
+
+    .quote-panel {
+      padding: 2rem;
+    }
+
+    /* Split becomes full photo on mobile */
+    .split-panel {
+      grid-template-columns: 1fr;
+    }
+
+    .split-text {
+      display: none;
+    }
+
+    .split-img img {
+      height: 100vh;
+    }
+
+    /* Pair becomes stacked vertically, each half height */
+    .pair-panel {
+      grid-template-columns: 1fr;
+      grid-template-rows: 1fr 1fr;
+      gap: 2px;
+    }
+
+    .pair-img img {
+      height: 50vh;
+    }
+
+    .closing-inner {
+      padding: 2rem 1.5rem;
     }
   }
 </style>
