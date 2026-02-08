@@ -277,7 +277,7 @@ function parseTags(tags: string | null): string[] {
     align-items: center;
     padding: 1.25rem 2rem;
     z-index: 100;
-    background: rgba(250, 250, 249, 0.85);
+    background: rgba(254, 252, 251, 0.85);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
     border-bottom: 1px solid var(--color-border);
@@ -285,7 +285,7 @@ function parseTags(tags: string | null): string[] {
 
   @media (prefers-color-scheme: dark) {
     .floating-nav {
-      background: rgba(10, 10, 10, 0.85);
+      background: rgba(17, 11, 15, 0.85);
     }
   }
 
@@ -323,8 +323,8 @@ function parseTags(tags: string | null): string[] {
   }
 
   .nav-dot.active {
-    background: var(--color-deep);
-    border-color: var(--color-deep);
+    background: var(--color-hot);
+    border-color: var(--color-hot);
     transform: scale(1.3);
   }
 
@@ -394,15 +394,15 @@ function parseTags(tags: string | null): string[] {
     font-family: var(--font-mono);
     font-size: 0.6875rem;
     letter-spacing: 0.15em;
-    color: var(--color-stone);
+    color: var(--color-hot);
     text-transform: uppercase;
   }
 
   .panel-title {
     font-family: var(--font-display);
     font-size: clamp(2rem, 4vw, 3.5rem);
-    font-weight: 600;
-    letter-spacing: -0.03em;
+    font-weight: 700;
+    letter-spacing: -0.04em;
     color: var(--color-deep);
     line-height: 1;
   }
@@ -458,14 +458,14 @@ function parseTags(tags: string | null): string[] {
 
   .card:hover {
     transform: translateY(-4px);
-    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.06);
-    border-color: var(--color-stone);
+    box-shadow: 0 12px 32px rgba(225, 29, 128, 0.1);
+    border-color: var(--color-dune);
     color: var(--color-deep);
   }
 
   @media (prefers-color-scheme: dark) {
     .card:hover {
-      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.3);
+      box-shadow: 0 12px 32px rgba(244, 114, 182, 0.12);
     }
   }
 
@@ -592,8 +592,9 @@ function parseTags(tags: string | null): string[] {
   }
 
   .view-all-card:hover {
-    color: var(--color-deep);
+    color: var(--color-hot);
     border-style: solid;
+    border-color: var(--color-dune);
   }
 
   .view-all-arrow {
@@ -695,9 +696,9 @@ function parseTags(tags: string | null): string[] {
   }
 
   .about-link:hover {
-    background: var(--color-deep);
-    color: var(--color-offwhite);
-    border-color: var(--color-deep);
+    background: linear-gradient(135deg, var(--color-hot), var(--color-electric));
+    color: white;
+    border-color: transparent;
   }
 
   .about-footer {
