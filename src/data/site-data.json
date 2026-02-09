@@ -37,7 +37,7 @@
     {
       "id": 1,
       "file_url": "/images/adventures/up-the-coast-camping/1769765590000_R0003401.jpeg",
-      "caption": "Night walk along the shore",
+      "caption": "Two figures dissolving into the shoreline at dusk",
       "alt_text": "Black and white aerial view of two figures walking along the shoreline at dusk, grainy and atmospheric",
       "type": "photo",
       "metadata": null,
@@ -47,7 +47,7 @@
     {
       "id": 2,
       "file_url": "/images/adventures/up-the-coast-camping/1769765652000_R0003417.jpeg",
-      "caption": "Blue hour on the beach",
+      "caption": "The blur of friends in the shallows, headland watching over",
       "alt_text": "Group of friends standing in the shallows at dusk with motion blur, coastal headland in the background",
       "type": "photo",
       "metadata": null,
@@ -57,7 +57,7 @@
     {
       "id": 3,
       "file_url": "/images/adventures/up-the-coast-camping/1769811884000_R0003467.jpeg",
-      "caption": "Home for the weekend",
+      "caption": "Camp pitched. Esky open. Paperbarks overhead.",
       "alt_text": "Campsite with blue and red tents among trees, someone standing and smiling with gear in dappled sunlight",
       "type": "photo",
       "metadata": null,
@@ -67,7 +67,7 @@
     {
       "id": 4,
       "file_url": "/images/adventures/up-the-coast-camping/1769892212000_R0003594.jpeg",
-      "caption": "Three at the lagoon",
+      "caption": "Three backs to the camera, lagoon holding still",
       "alt_text": "Three friends from behind standing on sand looking out at a still lagoon backed by lush green hills",
       "type": "photo",
       "metadata": null,
@@ -77,7 +77,7 @@
     {
       "id": 5,
       "file_url": "/images/adventures/up-the-coast-camping/1769893190000_R0003622.jpeg",
-      "caption": "Turquoise and sand",
+      "caption": "The water does the talking here",
       "alt_text": "Turquoise ocean waves rolling onto golden sand under an overcast sky",
       "type": "photo",
       "metadata": null,
@@ -87,7 +87,7 @@
     {
       "id": 6,
       "file_url": "/images/adventures/up-the-coast-camping/1769900898000_R0003660.jpeg",
-      "caption": "Wading the lagoon crossing",
+      "caption": "Bags above heads, lagoon up to our waists, laughing the whole way",
       "alt_text": "Two people wading through shallow lagoon water carrying bags with green hills rising behind them",
       "type": "photo",
       "metadata": null,
@@ -97,7 +97,7 @@
     {
       "id": 7,
       "file_url": "/images/adventures/up-the-coast-camping/1769905720000_R0003683.jpeg",
-      "caption": "Sunscreen and salt",
+      "caption": "Sunscreen shoulders and a borrowed chain",
       "alt_text": "Black and white close-up from behind of someone with sunscreen on their shoulders, chain necklace, and a striped beach umbrella",
       "type": "photo",
       "metadata": null,
@@ -113,12 +113,18 @@
       "id": 1,
       "title": "Up the Coast Camping",
       "slug": "up-the-coast-camping",
-      "location": "The Coast",
+      "location": "Birdie Beach & Freemans, Central Coast",
       "start_date": "2026-02-01",
       "end_date": "2026-02-03",
-      "description": "I really enjoyed it.",
+      "description": "Birdie Beach holds you the way only a place that knows you can. Two nights at Freemans — campfires, lagoon crossings, and the kind of company that doesn't need explaining.",
       "cover_image_url": "/images/adventures/up-the-coast-camping/1769893190000_R0003622.jpeg",
-      "featured": 1
+      "featured": 1,
+      "narrative": [
+        "There's a stretch of coast where the bush meets the sand and nobody pretends to be anything they're not.",
+        "We carried everything in on our backs. Set up camp under paperbarks. Someone's speaker. Someone's laugh. The lagoon cooling our feet.",
+        "Birdie has always been ours. The locals know. The water knows. You feel it the moment your shoes come off.",
+        "Golden hour went on forever. Three silhouettes against still water. Nobody reaching for a phone."
+      ]
     },
     {
       "id": 2,
@@ -129,7 +135,12 @@
       "end_date": "2025-12-14",
       "description": "Three days in the supernatural amphitheatre. Dust, music, and no phone signal.",
       "cover_image_url": null,
-      "featured": 1
+      "featured": 1,
+      "narrative": [
+        "The amphitheatre holds you like a secret. Red dust on everything.",
+        "No signal out here. Just the bass through the ground and someone handing you a warm beer.",
+        "You sleep when the music stops. You wake when it starts again."
+      ]
     },
     {
       "id": 3,
@@ -140,7 +151,12 @@
       "end_date": "2025-11-10",
       "description": "White sand, clear water, dolphins at sunrise. A weekend that felt like a week.",
       "cover_image_url": null,
-      "featured": 1
+      "featured": 1,
+      "narrative": [
+        "Hyams Beach at dawn. The sand so white it hurts to look at.",
+        "Dolphins broke the surface while we were still half asleep. Nobody had a camera ready. That was the point.",
+        "We stayed until the light turned gold and the bay went still."
+      ]
     }
   ],
   "tripPhotos": [
@@ -149,7 +165,7 @@
       "trip_id": 1,
       "media_id": 1,
       "file_url": "/images/adventures/up-the-coast-camping/1769765590000_R0003401.jpeg",
-      "caption": "Night walk along the shore",
+      "caption": "Two figures dissolving into the shoreline at dusk",
       "caption_override": null,
       "alt_text": "Black and white aerial view of two figures walking along the shoreline at dusk, grainy and atmospheric",
       "position": 0,
@@ -167,7 +183,7 @@
       "trip_id": 1,
       "media_id": 2,
       "file_url": "/images/adventures/up-the-coast-camping/1769765652000_R0003417.jpeg",
-      "caption": "Blue hour on the beach",
+      "caption": "The blur of friends in the shallows, headland watching over",
       "caption_override": null,
       "alt_text": "Group of friends standing in the shallows at dusk with motion blur, coastal headland in the background",
       "position": 1,
@@ -185,7 +201,7 @@
       "trip_id": 1,
       "media_id": 3,
       "file_url": "/images/adventures/up-the-coast-camping/1769811884000_R0003467.jpeg",
-      "caption": "Home for the weekend",
+      "caption": "Camp pitched. Esky open. Paperbarks overhead.",
       "caption_override": null,
       "alt_text": "Campsite with blue and red tents among trees, someone standing and smiling with gear in dappled sunlight",
       "position": 2,
@@ -203,7 +219,7 @@
       "trip_id": 1,
       "media_id": 4,
       "file_url": "/images/adventures/up-the-coast-camping/1769892212000_R0003594.jpeg",
-      "caption": "Three at the lagoon",
+      "caption": "Three backs to the camera, lagoon holding still",
       "caption_override": null,
       "alt_text": "Three friends from behind standing on sand looking out at a still lagoon backed by lush green hills",
       "position": 3,
@@ -221,7 +237,7 @@
       "trip_id": 1,
       "media_id": 5,
       "file_url": "/images/adventures/up-the-coast-camping/1769893190000_R0003622.jpeg",
-      "caption": "Turquoise and sand",
+      "caption": "The water does the talking here",
       "caption_override": null,
       "alt_text": "Turquoise ocean waves rolling onto golden sand under an overcast sky",
       "position": 4,
@@ -239,7 +255,7 @@
       "trip_id": 1,
       "media_id": 6,
       "file_url": "/images/adventures/up-the-coast-camping/1769900898000_R0003660.jpeg",
-      "caption": "Wading the lagoon crossing",
+      "caption": "Bags above heads, lagoon up to our waists, laughing the whole way",
       "caption_override": null,
       "alt_text": "Two people wading through shallow lagoon water carrying bags with green hills rising behind them",
       "position": 5,
@@ -257,7 +273,7 @@
       "trip_id": 1,
       "media_id": 7,
       "file_url": "/images/adventures/up-the-coast-camping/1769905720000_R0003683.jpeg",
-      "caption": "Sunscreen and salt",
+      "caption": "Sunscreen shoulders and a borrowed chain",
       "caption_override": null,
       "alt_text": "Black and white close-up from behind of someone with sunscreen on their shoulders, chain necklace, and a striped beach umbrella",
       "position": 6,

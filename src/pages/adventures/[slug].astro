@@ -18,6 +18,7 @@ if (!trip) {
 
 const photos = getTripPhotos(trip.id);
 const stats = getTripStats(trip.id);
+const narrative = trip.narrative || [];
 
 function formatDate(dateString: string): string {
   return new Date(dateString).toLocaleDateString('en-AU', {
@@ -27,48 +28,83 @@ function formatDate(dateString: string): string {
   });
 }
 
-// Atmospheric phrases — placed alongside photos
-const vibes = [
+// Fallback vibes if no narrative
+const defaultVibes = [
   'Salt air and slow mornings',
   'No signal, no worries',
   'Golden hour lasts longer out here',
   'The kind of tired that feels good',
-  'Sand in everything, care about nothing',
-  'Stars you forgot existed',
-  'The ocean does the thinking for you',
-  'Time moves different by the water',
 ];
 
-// Layout presets for photo blocks — each defines size + position + optional quote placement
-// w: width of the block in vw
-// ph: photo height as % of viewport height
-// py: photo vertical position (top, center, bottom)
-// pw: photo width within block (% of block width)
-// px: photo horizontal alignment (left, center, right)
-// quote: where to place a quote relative to photo (above, below, left, right, overlay, none)
-const layoutPresets = [
-  { w: 75, ph: 85, py: 'bottom', pw: 90, px: 'right', quote: 'above' },
-  { w: 50, ph: 55, py: 'top', pw: 80, px: 'left', quote: 'below' },
-  { w: 100, ph: 100, py: 'center', pw: 100, px: 'center', quote: 'overlay' },
-  { w: 45, ph: 50, py: 'center', pw: 70, px: 'center', quote: 'right' },
-  { w: 60, ph: 70, py: 'top', pw: 85, px: 'right', quote: 'below' },
-  { w: 90, ph: 90, py: 'bottom', pw: 100, px: 'left', quote: 'overlay' },
-  { w: 40, ph: 45, py: 'bottom', pw: 75, px: 'left', quote: 'above' },
-  { w: 70, ph: 80, py: 'center', pw: 60, px: 'center', quote: 'below' },
+const vibes = narrative.length > 0 ? narrative : defaultVibes;
+
+// Layout presets for photo blocks
+const photoPresets = [
+  { w: 75, ph: 85, py: 'bottom', pw: 90, px: 'right' },
+  { w: 50, ph: 55, py: 'top', pw: 80, px: 'left' },
+  { w: 100, ph: 100, py: 'center', pw: 100, px: 'center' },
+  { w: 60, ph: 70, py: 'top', pw: 85, px: 'right' },
+  { w: 90, ph: 90, py: 'bottom', pw: 100, px: 'left' },
+  { w: 45, ph: 50, py: 'center', pw: 70, px: 'center' },
+  { w: 70, ph: 80, py: 'center', pw: 60, px: 'center' },
+  { w: 55, ph: 65, py: 'bottom', pw: 85, px: 'left' },
 ];
 
-// Build story blocks
-type StoryBlock = {
-  photo: typeof photos[0];
-  preset: typeof layoutPresets[0];
-  vibe: string | null;
-};
+// Text panel presets — these define how gallery-wall text blocks look
+const textPresets = [
+  { w: 55, py: 'center', px: 'center', size: 'large' },
+  { w: 40, py: 'bottom', px: 'left', size: 'medium' },
+  { w: 65, py: 'center', px: 'right', size: 'large' },
+  { w: 45, py: 'top', px: 'center', size: 'medium' },
+];
 
-const storyBlocks: StoryBlock[] = photos.map((photo, i) => ({
-  photo,
-  preset: layoutPresets[i % layoutPresets.length],
-  vibe: i < vibes.length ? vibes[i] : null,
-}));
+// Build the river: interleave photos with narrative text panels
+type RiverItem =
+  | { type: 'photo'; photo: typeof photos[0]; preset: typeof photoPresets[0]; caption: string | null }
+  | { type: 'text'; text: string; preset: typeof textPresets[0] };
+
+const river: RiverItem[] = [];
+let vibeIdx = 0;
+let photoIdx = 0;
+let presetIdx = 0;
+let textPresetIdx = 0;
+
+// Pattern: photo, photo, TEXT, photo, photo, TEXT, ...
+// Text panels appear every 2 photos
+while (photoIdx < photos.length) {
+  // Add a photo
+  const photo = photos[photoIdx];
+  river.push({
+    type: 'photo',
+    photo,
+    preset: photoPresets[presetIdx % photoPresets.length],
+    caption: (photo as any).caption_override || (photo as any).caption || null,
+  });
+  photoIdx++;
+  presetIdx++;
+
+  // After every 2nd photo, insert a narrative text panel
+  if (photoIdx % 2 === 0 && vibeIdx < vibes.length) {
+    river.push({
+      type: 'text',
+      text: vibes[vibeIdx],
+      preset: textPresets[textPresetIdx % textPresets.length],
+    });
+    vibeIdx++;
+    textPresetIdx++;
+  }
+}
+
+// If we have remaining narrative, add them at the end
+while (vibeIdx < vibes.length) {
+  river.push({
+    type: 'text',
+    text: vibes[vibeIdx],
+    preset: textPresets[textPresetIdx % textPresets.length],
+  });
+  vibeIdx++;
+  textPresetIdx++;
+}
 ---
 
 <!DOCTYPE html>
@@ -110,9 +146,6 @@ const storyBlocks: StoryBlock[] = photos.map((photo, i) => ({
             {trip.end_date && <span> — {formatDate(trip.end_date)}</span>}
           </div>
         )}
-        {trip.description && (
-          <p class="hero-desc">{trip.description}</p>
-        )}
       </div>
       <div class="scroll-hint">
         <span class="hint-text">Scroll to explore</span>
@@ -120,37 +153,59 @@ const storyBlocks: StoryBlock[] = photos.map((photo, i) => ({
       </div>
     </div>
 
-    <!-- Photo blocks -->
-    {storyBlocks.map((block, i) => (
-      <div
-        class={`river-block photo-block reveal`}
-        style={`width: ${block.preset.w}vw;`}
-        data-py={block.preset.py}
-        data-px={block.preset.px}
-      >
+    <!-- Description as opening text panel -->
+    {trip.description && (
+      <div class="river-block text-block reveal" style="width: 50vw;" data-py="center" data-px="center" data-size="large">
+        <p class="wall-text">{trip.description}</p>
+      </div>
+    )}
+
+    <!-- River of photos + text -->
+    {river.map((item) => {
+      if (item.type === 'text') {
+        return (
+          <div
+            class="river-block text-block reveal"
+            style={`width: ${item.preset.w}vw;`}
+            data-py={item.preset.py}
+            data-px={item.preset.px}
+            data-size={item.preset.size}
+          >
+            <p class="wall-text">{item.text}</p>
+          </div>
+        );
+      }
+
+      return (
         <div
-          class={`photo-frame`}
-          style={`height: ${block.preset.ph}vh; width: ${block.preset.pw}%;`}
+          class="river-block photo-block reveal"
+          style={`width: ${item.preset.w}vw;`}
+          data-py={item.preset.py}
+          data-px={item.preset.px}
         >
-          <img
-            src={block.photo.file_url}
-            alt={block.photo.alt_text || block.photo.caption || ''}
-            loading="lazy"
-          />
-          {block.preset.quote === 'overlay' && block.vibe && (
-            <span class="vibe-overlay">{block.vibe}</span>
+          <div
+            class="photo-frame"
+            style={`height: ${item.preset.ph}vh; width: ${item.preset.pw}%;`}
+          >
+            <img
+              src={item.photo.file_url}
+              alt={item.photo.alt_text || item.caption || ''}
+              loading="lazy"
+            />
+          </div>
+
+          {item.caption && (
+            <span class="photo-caption">{item.caption}</span>
           )}
         </div>
+      );
+    })}
 
-        {block.vibe && block.preset.quote !== 'overlay' && (
-          <p class={`vibe-text vibe-${block.preset.quote}`}>{block.vibe}</p>
-        )}
-
-        {(block.photo.caption_override || block.photo.caption) && block.preset.quote !== 'overlay' && (
-          <span class="photo-caption">{block.photo.caption_override || block.photo.caption}</span>
-        )}
+    {photos.length === 0 && (
+      <div class="river-block text-block" style="width: 60vw;" data-py="center" data-px="center" data-size="large">
+        <p class="wall-text wall-text-muted">No photos yet. This story is waiting to be told.</p>
       </div>
-    ))}
+    )}
 
     <!-- Closing block -->
     <div class="river-block closing-block">
@@ -411,15 +466,6 @@ const storyBlocks: StoryBlock[] = photos.map((photo, i) => ({
     color: rgba(255, 255, 255, 0.6);
   }
 
-  .hero-desc {
-    font-family: var(--font-body);
-    font-size: 1rem;
-    line-height: 1.5;
-    color: rgba(255, 255, 255, 0.5);
-    margin: 0.5rem 0 0;
-    max-width: 32rem;
-  }
-
   .scroll-hint {
     position: absolute;
     bottom: 2.5rem;
@@ -456,28 +502,34 @@ const storyBlocks: StoryBlock[] = photos.map((photo, i) => ({
   }
 
   /* Vertical alignment */
-  .photo-block[data-py="top"] {
+  .photo-block[data-py="top"],
+  .text-block[data-py="top"] {
     justify-content: flex-start;
   }
 
-  .photo-block[data-py="center"] {
+  .photo-block[data-py="center"],
+  .text-block[data-py="center"] {
     justify-content: center;
   }
 
-  .photo-block[data-py="bottom"] {
+  .photo-block[data-py="bottom"],
+  .text-block[data-py="bottom"] {
     justify-content: flex-end;
   }
 
-  /* Horizontal alignment of inner content */
-  .photo-block[data-px="left"] {
+  /* Horizontal alignment */
+  .photo-block[data-px="left"],
+  .text-block[data-px="left"] {
     align-items: flex-start;
   }
 
-  .photo-block[data-px="center"] {
+  .photo-block[data-px="center"],
+  .text-block[data-px="center"] {
     align-items: center;
   }
 
-  .photo-block[data-px="right"] {
+  .photo-block[data-px="right"],
+  .text-block[data-px="right"] {
     align-items: flex-end;
   }
 
@@ -500,59 +552,6 @@ const storyBlocks: StoryBlock[] = photos.map((photo, i) => ({
     transform: scale(1.02);
   }
 
-  /* ---- Vibe / quote text ---- */
-  .vibe-overlay {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    padding: 3rem 2.5rem 2rem;
-    background: linear-gradient(to top, rgba(28, 16, 23, 0.75), transparent);
-    font-family: var(--font-body);
-    font-size: clamp(1.125rem, 2vw, 1.75rem);
-    font-style: italic;
-    line-height: 1.3;
-    color: rgba(255, 255, 255, 0.85);
-  }
-
-  .vibe-text {
-    font-family: var(--font-body);
-    font-style: italic;
-    line-height: 1.3;
-    color: rgba(255, 255, 255, 0.5);
-    margin: 0;
-    max-width: 16rem;
-  }
-
-  .vibe-above {
-    font-size: clamp(1rem, 1.8vw, 1.375rem);
-    margin-bottom: 1.5rem;
-    order: -1;
-  }
-
-  .vibe-below {
-    font-size: clamp(1rem, 1.8vw, 1.375rem);
-    margin-top: 1.5rem;
-  }
-
-  .vibe-right {
-    position: absolute;
-    right: -12vw;
-    top: 50%;
-    transform: translateY(-50%);
-    font-size: clamp(0.875rem, 1.5vw, 1.125rem);
-    width: 10vw;
-  }
-
-  .vibe-left {
-    position: absolute;
-    left: -12vw;
-    top: 50%;
-    transform: translateY(-50%);
-    font-size: clamp(0.875rem, 1.5vw, 1.125rem);
-    width: 10vw;
-  }
-
   /* ---- Photo caption ---- */
   .photo-caption {
     font-family: var(--font-mono);
@@ -560,6 +559,43 @@ const storyBlocks: StoryBlock[] = photos.map((photo, i) => ({
     letter-spacing: 0.04em;
     color: rgba(255, 255, 255, 0.35);
     margin-top: 0.75rem;
+  }
+
+  /* ---- Gallery wall text panels ---- */
+  .text-block {
+    padding: 4vh 3vw;
+  }
+
+  .wall-text {
+    font-family: var(--font-body);
+    line-height: 1.25;
+    color: rgba(255, 255, 255, 0.75);
+    margin: 0;
+    max-width: 30rem;
+  }
+
+  /* Large text — gallery wall statement */
+  .text-block[data-size="large"] .wall-text {
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 4vw, 3.5rem);
+    font-weight: 600;
+    letter-spacing: -0.03em;
+    line-height: 1.15;
+    color: rgba(255, 255, 255, 0.85);
+    max-width: 36rem;
+  }
+
+  /* Medium text — supporting narrative */
+  .text-block[data-size="medium"] .wall-text {
+    font-size: clamp(1.25rem, 2.5vw, 2rem);
+    font-style: italic;
+    line-height: 1.35;
+    max-width: 24rem;
+  }
+
+  .wall-text-muted {
+    opacity: 0.4;
+    font-style: italic;
   }
 
   /* ---- Closing ---- */
@@ -644,10 +680,6 @@ const storyBlocks: StoryBlock[] = photos.map((photo, i) => ({
       font-size: clamp(2rem, 10vw, 3.5rem);
     }
 
-    .hero-desc {
-      font-size: 0.875rem;
-    }
-
     .scroll-hint {
       right: 1.25rem;
       bottom: 1.5rem;
@@ -657,7 +689,7 @@ const storyBlocks: StoryBlock[] = photos.map((photo, i) => ({
       display: none;
     }
 
-    /* Force photo blocks to be wide on mobile — override inline widths */
+    /* Force photo blocks to be wide on mobile */
     .photo-block {
       min-width: 92vw !important;
       width: 92vw !important;
@@ -678,32 +710,19 @@ const storyBlocks: StoryBlock[] = photos.map((photo, i) => ({
       font-size: 0.625rem;
     }
 
-    .vibe-text {
-      max-width: 100%;
+    /* Text blocks on mobile */
+    .text-block {
+      min-width: 85vw !important;
+      width: 85vw !important;
+      padding: 3vh 6vw;
     }
 
-    .vibe-above {
-      font-size: 0.9375rem;
-      margin-bottom: 0.75rem;
+    .text-block[data-size="large"] .wall-text {
+      font-size: clamp(1.5rem, 7vw, 2.25rem);
     }
 
-    .vibe-below {
-      font-size: 0.9375rem;
-      margin-top: 0.75rem;
-    }
-
-    .vibe-right,
-    .vibe-left {
-      position: static;
-      transform: none;
-      width: auto;
-      font-size: 0.9375rem;
-      margin-top: 0.75rem;
-    }
-
-    .vibe-overlay {
-      font-size: 1rem;
-      padding: 2rem 1.25rem 1.25rem;
+    .text-block[data-size="medium"] .wall-text {
+      font-size: clamp(1.125rem, 5vw, 1.5rem);
     }
 
     .closing-block {

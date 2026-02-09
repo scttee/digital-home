@@ -11,6 +11,7 @@ interface Trip {
   description: string;
   cover_image_url: string;
   featured: number;
+  narrative?: string[];
 }
 
 interface TripPhoto {
