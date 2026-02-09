@@ -622,31 +622,74 @@ const storyBlocks: StoryBlock[] = photos.map((photo, i) => ({
   /* ---- Mobile ---- */
   @media (max-width: 768px) {
     .river {
-      gap: 4vw;
+      gap: 3vw;
     }
 
     .story-nav {
-      padding: 1rem 1.25rem;
+      padding: 0.75rem 1rem;
     }
 
     .nav-back,
     .nav-logo {
-      width: 2.25rem;
-      height: 2.25rem;
-      font-size: 1rem;
+      width: 2rem;
+      height: 2rem;
+      font-size: 0.875rem;
     }
 
     .hero-content {
-      padding: 3rem 1.5rem;
+      padding: 2rem 1.25rem;
+    }
+
+    .hero-title {
+      font-size: clamp(2rem, 10vw, 3.5rem);
+    }
+
+    .hero-desc {
+      font-size: 0.875rem;
     }
 
     .scroll-hint {
-      right: 1.5rem;
-      bottom: 2rem;
+      right: 1.25rem;
+      bottom: 1.5rem;
     }
 
+    .hint-text {
+      display: none;
+    }
+
+    /* Force photo blocks to be wide on mobile — override inline widths */
     .photo-block {
-      min-width: 75vw;
+      min-width: 92vw !important;
+      width: 92vw !important;
+    }
+
+    /* Force photo frames to fill their block and be tall */
+    .photo-frame {
+      width: 100% !important;
+      height: 75vh !important;
+    }
+
+    .photo-block[data-py="top"] .photo-frame,
+    .photo-block[data-py="bottom"] .photo-frame {
+      height: 70vh !important;
+    }
+
+    .photo-caption {
+      font-size: 0.625rem;
+    }
+
+    .vibe-text {
+      max-width: 100%;
+    }
+
+    .vibe-above {
+      font-size: 0.9375rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .vibe-below {
+      font-size: 0.9375rem;
+      margin-top: 0.75rem;
     }
 
     .vibe-right,
@@ -654,10 +697,18 @@ const storyBlocks: StoryBlock[] = photos.map((photo, i) => ({
       position: static;
       transform: none;
       width: auto;
+      font-size: 0.9375rem;
+      margin-top: 0.75rem;
+    }
+
+    .vibe-overlay {
+      font-size: 1rem;
+      padding: 2rem 1.25rem 1.25rem;
     }
 
     .closing-block {
-      width: 80vw;
+      width: 85vw;
+      min-width: 85vw;
     }
   }
 </style>
