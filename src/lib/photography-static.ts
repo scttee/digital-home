@@ -12,6 +12,15 @@ interface Trip {
   cover_image_url: string;
   featured: number;
   narrative?: string[];
+  colorScheme?: {
+    accent: string;
+    accentSoft: string;
+    text: string;
+    textSoft: string;
+    bg: string;
+    gradientFrom: string;
+    gradientTo: string;
+  };
 }
 
 interface TripPhoto {

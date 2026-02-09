@@ -119,6 +119,15 @@
       "description": "Birdie Beach holds you the way only a place that knows you can. Two nights at Freemans — campfires, lagoon crossings, and the kind of company that doesn't need explaining.",
       "cover_image_url": "/images/adventures/up-the-coast-camping/1769893190000_R0003622.jpeg",
       "featured": 1,
+      "colorScheme": {
+        "accent": "#ff2d87",
+        "accentSoft": "#f9a8d4",
+        "text": "#fce7f3",
+        "textSoft": "#f9a8d4",
+        "bg": "#1c1017",
+        "gradientFrom": "#ff2d87",
+        "gradientTo": "#fb923c"
+      },
       "narrative": [
         "There's a stretch of coast where the bush meets the sand and nobody pretends to be anything they're not.",
         "We carried everything in on our backs. Set up camp under paperbarks. Someone's speaker. Someone's laugh. The lagoon cooling our feet.",
@@ -136,6 +145,15 @@
       "description": "Three days in the supernatural amphitheatre. Dust, music, and no phone signal.",
       "cover_image_url": null,
       "featured": 1,
+      "colorScheme": {
+        "accent": "#a78bfa",
+        "accentSoft": "#c4b5fd",
+        "text": "#ede9fe",
+        "textSoft": "#c4b5fd",
+        "bg": "#110a1a",
+        "gradientFrom": "#a78bfa",
+        "gradientTo": "#8b5cf6"
+      },
       "narrative": [
         "The amphitheatre holds you like a secret. Red dust on everything.",
         "No signal out here. Just the bass through the ground and someone handing you a warm beer.",
@@ -152,6 +170,15 @@
       "description": "White sand, clear water, dolphins at sunrise. A weekend that felt like a week.",
       "cover_image_url": null,
       "featured": 1,
+      "colorScheme": {
+        "accent": "#a3e635",
+        "accentSoft": "#bef264",
+        "text": "#ecfccb",
+        "textSoft": "#d9f99d",
+        "bg": "#0a1210",
+        "gradientFrom": "#a3e635",
+        "gradientTo": "#22d3ee"
+      },
       "narrative": [
         "Hyams Beach at dawn. The sand so white it hurts to look at.",
         "Dolphins broke the surface while we were still half asleep. Nobody had a camera ready. That was the point.",

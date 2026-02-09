@@ -20,6 +20,18 @@ const photos = getTripPhotos(trip.id);
 const stats = getTripStats(trip.id);
 const narrative = trip.narrative || [];
 
+// Per-trip color scheme — each adventure feels different
+const defaultColors = {
+  accent: '#ff2d87',
+  accentSoft: '#f9a8d4',
+  text: '#fce7f3',
+  textSoft: '#f9a8d4',
+  bg: '#1c1017',
+  gradientFrom: '#ff2d87',
+  gradientTo: '#fb923c',
+};
+const colors = trip.colorScheme || defaultColors;
+
 function formatDate(dateString: string): string {
   return new Date(dateString).toLocaleDateString('en-AU', {
     year: 'numeric',
@@ -116,7 +128,10 @@ while (vibeIdx < vibes.length) {
   <title>{trip.title} — Adventures</title>
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 </head>
-<body class="story-body">
+<body
+  class="story-body"
+  style={`--trip-accent: ${colors.accent}; --trip-accent-soft: ${colors.accentSoft}; --trip-text: ${colors.text}; --trip-text-soft: ${colors.textSoft}; --trip-bg: ${colors.bg}; --trip-grad-from: ${colors.gradientFrom}; --trip-grad-to: ${colors.gradientTo};`}
+>
 
   <!-- Fixed nav -->
   <nav class="story-nav">
@@ -284,7 +299,7 @@ while (vibeIdx < vibes.length) {
     padding: 0;
     overflow: hidden;
     height: 100vh;
-    background: var(--color-deep);
+    background: var(--trip-bg);
   }
 
   /* ---- Fixed nav ---- */
@@ -308,7 +323,7 @@ while (vibeIdx < vibes.length) {
   .nav-back {
     font-family: var(--font-display);
     font-size: 1.5rem;
-    color: white;
+    color: var(--trip-text);
     text-decoration: none;
     width: 2.5rem;
     height: 2.5rem;
@@ -316,14 +331,14 @@ while (vibeIdx < vibes.length) {
     align-items: center;
     justify-content: center;
     border-radius: 50%;
-    background: rgba(28, 16, 23, 0.4);
+    background: rgba(0, 0, 0, 0.35);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     transition: background 0.2s, color 0.2s;
   }
 
   .nav-back:hover {
-    background: var(--color-hot);
+    background: var(--trip-accent);
     color: white;
   }
 
@@ -332,7 +347,7 @@ while (vibeIdx < vibes.length) {
     font-size: 1.125rem;
     font-weight: 700;
     letter-spacing: -0.04em;
-    color: white;
+    color: var(--trip-text);
     text-decoration: none;
     width: 2.5rem;
     height: 2.5rem;
@@ -340,14 +355,14 @@ while (vibeIdx < vibes.length) {
     align-items: center;
     justify-content: center;
     border-radius: 50%;
-    background: rgba(28, 16, 23, 0.4);
+    background: rgba(0, 0, 0, 0.35);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     transition: background 0.2s, color 0.2s;
   }
 
   .nav-logo:hover {
-    color: var(--color-hot);
+    color: var(--trip-accent);
   }
 
   /* ---- Progress bar ---- */
@@ -357,13 +372,13 @@ while (vibeIdx < vibes.length) {
     left: 0;
     right: 0;
     height: 3px;
-    background: rgba(255, 255, 255, 0.08);
+    background: color-mix(in srgb, var(--trip-accent) 15%, transparent);
     z-index: 100;
   }
 
   .progress-fill {
     height: 100%;
-    background: linear-gradient(90deg, var(--color-hot), var(--color-electric), var(--color-lime));
+    background: linear-gradient(90deg, var(--trip-grad-from), var(--trip-grad-to));
     transform-origin: left;
     transform: scaleX(0);
     transition: transform 0.15s linear;
@@ -432,8 +447,8 @@ while (vibeIdx < vibes.length) {
     width: 100%;
     background: linear-gradient(
       to top,
-      rgba(28, 16, 23, 0.92) 0%,
-      rgba(28, 16, 23, 0.5) 45%,
+      color-mix(in srgb, var(--trip-bg) 95%, transparent) 0%,
+      color-mix(in srgb, var(--trip-bg) 50%, transparent) 45%,
       transparent 100%
     );
     display: flex;
@@ -446,7 +461,7 @@ while (vibeIdx < vibes.length) {
     font-size: 0.75rem;
     letter-spacing: 0.25em;
     text-transform: uppercase;
-    color: var(--color-hot);
+    color: var(--trip-accent);
   }
 
   .hero-title {
@@ -455,7 +470,7 @@ while (vibeIdx < vibes.length) {
     font-weight: 700;
     letter-spacing: -0.04em;
     line-height: 0.95;
-    color: white;
+    color: var(--trip-text);
     margin: 0;
   }
 
@@ -463,7 +478,7 @@ while (vibeIdx < vibes.length) {
     font-family: var(--font-mono);
     font-size: 0.8125rem;
     letter-spacing: 0.06em;
-    color: rgba(255, 255, 255, 0.6);
+    color: var(--trip-text-soft);
   }
 
   .scroll-hint {
@@ -474,7 +489,7 @@ while (vibeIdx < vibes.length) {
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    color: rgba(255, 255, 255, 0.5);
+    color: var(--trip-text-soft);
     transition: opacity 0.3s;
   }
 
@@ -557,7 +572,8 @@ while (vibeIdx < vibes.length) {
     font-family: var(--font-mono);
     font-size: 0.6875rem;
     letter-spacing: 0.04em;
-    color: rgba(255, 255, 255, 0.35);
+    color: var(--trip-accent-soft);
+    opacity: 0.5;
     margin-top: 0.75rem;
   }
 
@@ -569,7 +585,7 @@ while (vibeIdx < vibes.length) {
   .wall-text {
     font-family: var(--font-body);
     line-height: 1.25;
-    color: rgba(255, 255, 255, 0.75);
+    color: var(--trip-text-soft);
     margin: 0;
     max-width: 30rem;
   }
@@ -581,7 +597,7 @@ while (vibeIdx < vibes.length) {
     font-weight: 600;
     letter-spacing: -0.03em;
     line-height: 1.15;
-    color: rgba(255, 255, 255, 0.85);
+    color: var(--trip-text);
     max-width: 36rem;
   }
 
@@ -590,6 +606,7 @@ while (vibeIdx < vibes.length) {
     font-size: clamp(1.25rem, 2.5vw, 2rem);
     font-style: italic;
     line-height: 1.35;
+    color: var(--trip-accent-soft);
     max-width: 24rem;
   }
 
@@ -625,14 +642,15 @@ while (vibeIdx < vibes.length) {
     font-size: 0.6875rem;
     text-transform: uppercase;
     letter-spacing: 0.12em;
-    color: rgba(255, 255, 255, 0.4);
+    color: var(--trip-text-soft);
+    opacity: 0.6;
   }
 
   .cam-name {
     font-family: var(--font-display);
     font-size: 0.875rem;
     font-weight: 500;
-    color: rgba(255, 255, 255, 0.6);
+    color: var(--trip-text-soft);
   }
 
   .closing-back {
@@ -642,17 +660,19 @@ while (vibeIdx < vibes.length) {
     font-family: var(--font-display);
     font-size: 0.875rem;
     font-weight: 500;
-    color: rgba(255, 255, 255, 0.5);
+    color: var(--trip-text-soft);
     text-decoration: none;
     padding: 0.75rem 1.5rem;
-    border: 1.5px solid rgba(255, 255, 255, 0.15);
+    border: 1.5px solid var(--trip-accent-soft);
     border-radius: 2rem;
+    opacity: 0.6;
     transition: all 0.2s;
   }
 
   .closing-back:hover {
-    color: var(--color-hot);
-    border-color: var(--color-hot);
+    color: var(--trip-accent);
+    border-color: var(--trip-accent);
+    opacity: 1;
   }
 
   /* ---- Mobile ---- */
