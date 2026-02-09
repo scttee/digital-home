@@ -119,6 +119,28 @@
       "description": "I really enjoyed it.",
       "cover_image_url": "/images/adventures/up-the-coast-camping/1769893190000_R0003622.jpeg",
       "featured": 1
+    },
+    {
+      "id": 2,
+      "title": "Meredith Music Festival",
+      "slug": "meredith",
+      "location": "Meredith, VIC",
+      "start_date": "2025-12-12",
+      "end_date": "2025-12-14",
+      "description": "Three days in the supernatural amphitheatre. Dust, music, and no phone signal.",
+      "cover_image_url": null,
+      "featured": 1
+    },
+    {
+      "id": 3,
+      "title": "Jervis Bay",
+      "slug": "jervis-bay",
+      "location": "Jervis Bay, NSW",
+      "start_date": "2025-11-08",
+      "end_date": "2025-11-10",
+      "description": "White sand, clear water, dolphins at sunrise. A weekend that felt like a week.",
+      "cover_image_url": null,
+      "featured": 1
     }
   ],
   "tripPhotos": [

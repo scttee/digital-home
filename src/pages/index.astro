@@ -53,19 +53,19 @@ function parseTags(tags: string | null): string[] {
     <section class="panel opener-panel" data-section="opener">
       <div class="opener-name" id="openerName">
         <div class="opener-line">
-          <span class="scatter-letter" data-sx="-30" data-sy="-25" data-sr="-25">S</span>
+          <span class="scatter-letter" data-sx="-30" data-sy="-25" data-sr="-25" data-blur="8">S</span>
           <span class="scatter-letter" data-sx="22" data-sy="-38" data-sr="18">C</span>
-          <span class="scatter-letter" data-sx="-18" data-sy="32" data-sr="-42">O</span>
+          <span class="scatter-letter" data-sx="-18" data-sy="32" data-sr="-42" data-blur="12">O</span>
           <span class="scatter-letter" data-sx="38" data-sy="18" data-sr="30">T</span>
-          <span class="scatter-letter" data-sx="-42" data-sy="-12" data-sr="-15">T</span>
+          <span class="scatter-letter" data-sx="-42" data-sy="-12" data-sr="-15" data-blur="6">T</span>
         </div>
         <div class="opener-line">
           <span class="scatter-letter" data-sx="28" data-sy="-22" data-sr="22">S</span>
-          <span class="scatter-letter" data-sx="-32" data-sy="38" data-sr="-35">H</span>
+          <span class="scatter-letter" data-sx="-32" data-sy="38" data-sr="-35" data-blur="10">H</span>
           <span class="scatter-letter" data-sx="42" data-sy="-32" data-sr="42">I</span>
-          <span class="scatter-letter" data-sx="-22" data-sy="15" data-sr="-28">R</span>
+          <span class="scatter-letter" data-sx="-22" data-sy="15" data-sr="-28" data-blur="14">R</span>
           <span class="scatter-letter" data-sx="32" data-sy="28" data-sr="16">B</span>
-          <span class="scatter-letter" data-sx="-26" data-sy="-35" data-sr="-32">I</span>
+          <span class="scatter-letter" data-sx="-26" data-sy="-35" data-sr="-32" data-blur="8">I</span>
           <span class="scatter-letter" data-sx="18" data-sy="-42" data-sr="28">N</span>
         </div>
       </div>
@@ -234,15 +234,18 @@ function parseTags(tags: string | null): string[] {
         const sx = parseFloat(el.dataset.sx || '0');
         const sy = parseFloat(el.dataset.sy || '0');
         const sr = parseFloat(el.dataset.sr || '0');
+        const blurMax = parseFloat(el.dataset.blur || '0');
 
         const x = sx * (1 - eased);
         const y = sy * (1 - eased);
         const r = sr * (1 - eased);
         const scale = 0.6 + (0.4 * eased);
         const opacity = 0.15 + (0.85 * eased);
+        const blur = blurMax * (1 - eased);
 
         el.style.transform = `translate(${x}vw, ${y}vh) rotate(${r}deg) scale(${scale})`;
         el.style.opacity = String(opacity);
+        el.style.filter = blur > 0.1 ? `blur(${blur}px)` : 'none';
       });
 
       // Fade out hint
