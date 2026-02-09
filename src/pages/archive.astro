@@ -4,52 +4,49 @@ import { getAllMedia, getCollections } from '../lib/db-static';
 
 const media = getAllMedia();
 const collections = getCollections();
+
+// Give photos varied spans for visual interest
+const spanPattern = [false, false, true, false, false, false, true, false] as const;
 ---
 
 <BaseLayout title="Archive — Digital Home">
-  <div class="block-page">
-    <div class="block-grid">
-      <!-- Header block -->
-      <div class="block block-header">
-        <span class="block-label">Archive</span>
-        <h1 class="block-title">Visual Archive</h1>
-        <p class="block-subtitle">Moments captured and preserved. A living collection of images, organized not by algorithm but by intention.</p>
-      </div>
+  <div class="archive-page">
+    <div class="archive-header">
+      <span class="archive-label">Visual Archive</span>
+      <h1 class="archive-title">Archive</h1>
+      <p class="archive-sub">Moments captured. A living wall of images, organized by intention not algorithm.</p>
+    </div>
 
-      <!-- Collection blocks -->
-      {collections.map((collection, i) => (
-        <a href={`/archive/${collection.slug}`} class="block collection-block" style={`animation-delay: ${i * 0.08}s`}>
-          {collection.cover_image_url && (
-            <div class="collection-image">
-              <img src={collection.cover_image_url} alt={collection.title} loading="lazy" />
-            </div>
-          )}
-          <div class="collection-info">
-            <span class="collection-label">Collection</span>
-            <h2 class="collection-name">{collection.title}</h2>
-            {collection.description && (
-              <p class="collection-description">{collection.description}</p>
+    {collections.length > 0 && (
+      <div class="collections-row">
+        {collections.map((collection, i) => (
+          <a href={`/archive/${collection.slug}`} class="collection-chip" style={`animation-delay: ${i * 0.08}s`}>
+            <span class="chip-label">Collection</span>
+            <span class="chip-name">{collection.title}</span>
+            <span class="chip-arrow">&rarr;</span>
+          </a>
+        ))}
+      </div>
+    )}
+
+    <div class="photo-wall">
+      {media.map((item, i) => {
+        const isWide = spanPattern[i % spanPattern.length];
+        return (
+          <div class={`wall-item ${isWide ? 'wall-wide' : ''}`} style={`animation-delay: ${i * 0.04}s`}>
+            <img src={item.file_url} alt={item.alt_text || item.caption || ''} loading="lazy" />
+            {item.caption && (
+              <div class="wall-caption">
+                <span>{item.caption}</span>
+              </div>
             )}
           </div>
-          <span class="collection-arrow">&rarr;</span>
-        </a>
-      ))}
-
-      <!-- Media blocks -->
-      {media.map((item, i) => (
-        <div class="block media-block" style={`animation-delay: ${(i + collections.length) * 0.06}s`}>
-          <div class="media-image">
-            <img src={item.file_url} alt={item.alt_text || item.caption || ''} loading="lazy" />
-          </div>
-          {item.caption && (
-            <span class="media-caption">{item.caption}</span>
-          )}
-        </div>
-      ))}
+        );
+      })}
 
       {media.length === 0 && collections.length === 0 && (
-        <div class="block empty-block">
-          <p>No media yet. Start building your archive.</p>
+        <div class="archive-empty">
+          <p>No media yet. The archive is waiting.</p>
         </div>
       )}
     </div>
@@ -57,222 +54,210 @@ const collections = getCollections();
 </BaseLayout>
 
 <style>
-  .block-page {
-    padding: 0 1rem 4rem;
-    max-width: 100%;
+  .archive-page {
+    padding: 0 2rem 6rem;
+    max-width: 80rem;
+    margin: 0 auto;
   }
 
-  .block-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 1px;
-    background: var(--color-border);
-    border: 1px solid var(--color-border);
-  }
-
-  .block {
-    background: var(--color-offwhite);
-    padding: 2rem;
-    animation: blockIn 0.5s var(--ease-smooth) backwards;
-    transition: background 0.2s var(--ease-smooth);
-  }
-
-  .block:hover {
-    background: var(--color-sand);
-  }
-
-  .block-header {
-    grid-column: 1 / -1;
-    padding: 3rem 2rem;
+  .archive-header {
+    padding: 3rem 0 3rem;
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
   }
 
-  .block-header:hover {
-    background: var(--color-offwhite);
-  }
-
-  .block-label {
+  .archive-label {
     font-family: var(--font-mono);
     font-size: 0.6875rem;
     letter-spacing: 0.15em;
     text-transform: uppercase;
-    color: var(--color-hot);
+    color: var(--color-sunset);
   }
 
-  .block-title {
+  .archive-title {
     font-family: var(--font-display);
-    font-size: clamp(2.5rem, 5vw, 4rem);
+    font-size: clamp(3rem, 8vw, 5rem);
     font-weight: 700;
-    letter-spacing: -0.04em;
-    line-height: 1;
+    letter-spacing: -0.05em;
+    line-height: 0.95;
+    background: linear-gradient(135deg, var(--color-sunset), var(--color-hot));
+    background-size: 200% 200%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: gradShift 5s ease infinite;
   }
 
-  .block-subtitle {
+  .archive-sub {
     font-family: var(--font-body);
-    font-size: 1.0625rem;
-    line-height: 1.6;
+    font-size: 1.125rem;
     color: var(--color-stone);
-    max-width: 36rem;
     margin: 0;
   }
 
-  /* Collection blocks */
-  .collection-block {
+  @keyframes gradShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+
+  /* ---- Collection chips ---- */
+  .collections-row {
     display: flex;
-    flex-direction: column;
-    min-height: 300px;
-    padding: 0;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-bottom: 3rem;
+  }
+
+  .collection-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.25rem;
+    background: color-mix(in srgb, var(--color-sunset) 8%, transparent);
+    border-radius: 2rem;
     text-decoration: none;
     color: var(--color-deep);
-    position: relative;
-    overflow: hidden;
+    transition: all 0.2s var(--ease-smooth);
+    animation: chipIn 0.4s var(--ease-smooth) backwards;
   }
 
-  .collection-image {
-    width: 100%;
-    height: 180px;
-    overflow: hidden;
+  .collection-chip:hover {
+    background: color-mix(in srgb, var(--color-sunset) 18%, transparent);
+    transform: translateY(-1px);
   }
 
-  .collection-image img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: transform 0.4s var(--ease-smooth);
-  }
-
-  .collection-block:hover .collection-image img {
-    transform: scale(1.05);
-  }
-
-  .collection-info {
-    padding: 1.5rem 2rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-    flex: 1;
-  }
-
-  .collection-label {
+  .chip-label {
     font-family: var(--font-mono);
-    font-size: 0.6875rem;
+    font-size: 0.625rem;
     text-transform: uppercase;
-    letter-spacing: 0.12em;
-    color: var(--color-hot);
+    letter-spacing: 0.1em;
+    color: var(--color-sunset);
   }
 
-  .collection-name {
+  .chip-name {
     font-family: var(--font-display);
-    font-size: 1.25rem;
-    font-weight: 600;
-    letter-spacing: -0.02em;
-  }
-
-  .collection-description {
-    font-family: var(--font-body);
     font-size: 0.875rem;
-    line-height: 1.5;
+    font-weight: 600;
+  }
+
+  .chip-arrow {
     color: var(--color-stone);
-    margin: 0;
+    transition: transform 0.2s;
   }
 
-  .collection-arrow {
-    position: absolute;
-    bottom: 1.5rem;
-    right: 2rem;
-    font-size: 1.25rem;
-    color: var(--color-stone);
-    transition: all 0.3s var(--ease-smooth);
+  .collection-chip:hover .chip-arrow {
+    transform: translateX(3px);
+    color: var(--color-sunset);
   }
 
-  .collection-block:hover .collection-arrow {
-    color: var(--color-hot);
-    transform: translateX(4px);
+  @keyframes chipIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
   }
 
-  /* Media blocks */
-  .media-block {
-    padding: 0;
+  /* ---- Photo wall — masonry-ish grid ---- */
+  .photo-wall {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+  }
+
+  .wall-item {
     position: relative;
     overflow: hidden;
-    min-height: 250px;
+    aspect-ratio: 1;
+    animation: wallIn 0.5s var(--ease-smooth) backwards;
+    cursor: default;
   }
 
-  .media-block:hover {
-    background: var(--color-offwhite);
+  /* Every few images span 2 columns for variety */
+  .wall-wide {
+    grid-column: span 2;
+    aspect-ratio: 2/1;
   }
 
-  .media-image {
+  .wall-item img {
     width: 100%;
     height: 100%;
-  }
-
-  .media-image img {
-    width: 100%;
-    height: 100%;
-    min-height: 250px;
     object-fit: cover;
-    transition: transform 0.4s var(--ease-smooth);
+    display: block;
+    transition: transform 0.5s var(--ease-smooth);
   }
 
-  .media-block:hover .media-image img {
-    transform: scale(1.03);
+  .wall-item:hover img {
+    transform: scale(1.04);
   }
 
-  .media-caption {
+  .wall-caption {
     position: absolute;
     bottom: 0;
     left: 0;
     right: 0;
-    padding: 2rem 1.5rem 1rem;
-    background: linear-gradient(to top, rgba(28, 16, 23, 0.7), transparent);
-    font-family: var(--font-mono);
-    font-size: 0.75rem;
-    letter-spacing: 0.05em;
-    color: white;
+    padding: 2.5rem 1.25rem 1rem;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.65), transparent);
     opacity: 0;
-    transition: opacity 0.3s var(--ease-smooth);
+    transition: opacity 0.35s var(--ease-smooth);
   }
 
-  .media-block:hover .media-caption {
+  .wall-item:hover .wall-caption {
     opacity: 1;
   }
 
-  .empty-block {
-    grid-column: 1 / -1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 200px;
+  .wall-caption span {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.04em;
+    color: white;
   }
 
-  .empty-block p {
+  .archive-empty {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 4rem 0;
+  }
+
+  .archive-empty p {
     font-family: var(--font-mono);
-    font-size: 0.8125rem;
+    font-size: 0.875rem;
     color: var(--color-stone);
     margin: 0;
   }
 
-  @keyframes blockIn {
+  @keyframes wallIn {
     from {
       opacity: 0;
-      transform: translateY(12px);
+      transform: scale(0.96);
     }
     to {
       opacity: 1;
-      transform: translateY(0);
+      transform: scale(1);
     }
   }
 
-  @media (max-width: 640px) {
-    .block-grid {
-      grid-template-columns: 1fr;
+  @media (max-width: 768px) {
+    .archive-page {
+      padding: 0 1rem 4rem;
     }
 
-    .block-header {
-      padding: 2rem 1.5rem;
+    .photo-wall {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.25rem;
+    }
+
+    .wall-wide {
+      grid-column: span 2;
+    }
+
+    .archive-header {
+      padding: 2rem 0.25rem 2rem;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .photo-wall {
+      grid-template-columns: 1fr 1fr;
     }
   }
 </style>

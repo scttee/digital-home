@@ -16,38 +16,42 @@ function parseTags(tags: string | null): string[] {
   if (!tags) return [];
   try { return JSON.parse(tags); } catch { return []; }
 }
+
+// Alternate between featured (big) and regular (small) thoughts
+const sizes = ['big', 'regular', 'regular', 'big', 'regular'] as const;
 ---
 
 <BaseLayout title="Thoughts — Digital Home">
-  <div class="block-page">
-    <div class="block-grid">
-      <!-- Header block -->
-      <div class="block block-header">
-        <span class="block-label">01 — Thoughts</span>
-        <h1 class="block-title">Thoughts</h1>
-        <p class="block-subtitle">A running stream of ideas, observations, and micro-reflections. No algorithms, just chronology.</p>
-      </div>
+  <div class="thoughts-page">
+    <div class="thoughts-header">
+      <span class="thoughts-label">01 — Thoughts</span>
+      <h1 class="thoughts-title">Thoughts</h1>
+      <p class="thoughts-sub">A running stream. No algorithms, just chronology.</p>
+    </div>
 
-      <!-- Thought blocks -->
-      {thoughts.map((thought, i) => (
-        <div class="block thought-block" style={`animation-delay: ${i * 0.06}s`}>
-          <p class="thought-content">{thought.content}</p>
-          <div class="thought-footer">
-            {parseTags(thought.tags).length > 0 && (
-              <div class="thought-tags">
-                {parseTags(thought.tags).map((tag) => (
-                  <span class="tag">{tag}</span>
-                ))}
-              </div>
-            )}
-            <time class="thought-date">{formatDate(thought.created_at)}</time>
+    <div class="thoughts-stream">
+      {thoughts.map((thought, i) => {
+        const size = sizes[i % sizes.length];
+        return (
+          <div class={`thought ${size === 'big' ? 'thought-big' : 'thought-regular'}`} style={`animation-delay: ${i * 0.06}s`}>
+            <p class="thought-text">{thought.content}</p>
+            <div class="thought-footer">
+              {parseTags(thought.tags).length > 0 && (
+                <div class="thought-tags">
+                  {parseTags(thought.tags).map((tag) => (
+                    <span class="thought-tag">{tag}</span>
+                  ))}
+                </div>
+              )}
+              <time class="thought-date">{formatDate(thought.created_at)}</time>
+            </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
 
       {thoughts.length === 0 && (
-        <div class="block empty-block">
-          <p>No thoughts yet.</p>
+        <div class="thought thought-empty">
+          <p class="thought-text">No thoughts yet. The stream is waiting.</p>
         </div>
       )}
     </div>
@@ -55,43 +59,20 @@ function parseTags(tags: string | null): string[] {
 </BaseLayout>
 
 <style>
-  .block-page {
-    padding: 0 1rem 4rem;
-    max-width: 100%;
+  .thoughts-page {
+    padding: 0 2rem 6rem;
+    max-width: 64rem;
+    margin: 0 auto;
   }
 
-  .block-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-    gap: 1px;
-    background: var(--color-border);
-    border: 1px solid var(--color-border);
-  }
-
-  .block {
-    background: var(--color-offwhite);
-    padding: 2rem;
-    animation: blockIn 0.5s var(--ease-smooth) backwards;
-    transition: background 0.2s var(--ease-smooth);
-  }
-
-  .block:hover {
-    background: var(--color-sand);
-  }
-
-  .block-header {
-    grid-column: 1 / -1;
-    padding: 3rem 2rem;
+  .thoughts-header {
+    padding: 3rem 0 4rem;
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
   }
 
-  .block-header:hover {
-    background: var(--color-offwhite);
-  }
-
-  .block-label {
+  .thoughts-label {
     font-family: var(--font-mono);
     font-size: 0.6875rem;
     letter-spacing: 0.15em;
@@ -99,44 +80,80 @@ function parseTags(tags: string | null): string[] {
     color: var(--color-hot);
   }
 
-  .block-title {
+  .thoughts-title {
     font-family: var(--font-display);
-    font-size: clamp(2.5rem, 5vw, 4rem);
+    font-size: clamp(3rem, 8vw, 5rem);
     font-weight: 700;
-    letter-spacing: -0.04em;
-    line-height: 1;
+    letter-spacing: -0.05em;
+    line-height: 0.95;
+    background: linear-gradient(135deg, var(--color-hot), var(--color-electric));
+    background-size: 200% 200%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: gradShift 5s ease infinite;
   }
 
-  .block-subtitle {
+  .thoughts-sub {
     font-family: var(--font-body);
-    font-size: 1.0625rem;
-    line-height: 1.6;
+    font-size: 1.125rem;
     color: var(--color-stone);
-    max-width: 36rem;
     margin: 0;
   }
 
-  .thought-block {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    min-height: 200px;
-    cursor: default;
+  @keyframes gradShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
   }
 
-  .thought-content {
-    font-family: var(--font-body);
-    font-size: 1.0625rem;
-    line-height: 1.65;
+  /* ---- Stream layout ---- */
+  .thoughts-stream {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+  }
+
+  .thought {
+    animation: thoughtIn 0.5s var(--ease-smooth) backwards;
+    padding: 2rem 0;
+    border-bottom: 1px solid var(--color-border);
+    transition: border-color 0.3s;
+  }
+
+  .thought:hover {
+    border-color: var(--color-hot);
+  }
+
+  .thought:last-child {
+    border-bottom: none;
+  }
+
+  /* Big thoughts — statement-sized */
+  .thought-big .thought-text {
+    font-family: var(--font-display);
+    font-size: clamp(1.75rem, 4vw, 2.75rem);
+    font-weight: 600;
+    letter-spacing: -0.03em;
+    line-height: 1.2;
     color: var(--color-deep);
     margin: 0 0 1.5rem;
-    flex: 1;
+  }
+
+  /* Regular thoughts — body copy */
+  .thought-regular .thought-text {
+    font-family: var(--font-body);
+    font-size: 1.125rem;
+    line-height: 1.7;
+    color: var(--color-deep);
+    margin: 0 0 1.25rem;
+    max-width: 40rem;
   }
 
   .thought-footer {
     display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
+    align-items: center;
+    gap: 1rem;
   }
 
   .thought-tags {
@@ -145,15 +162,15 @@ function parseTags(tags: string | null): string[] {
     gap: 0.375rem;
   }
 
-  .tag {
+  .thought-tag {
     display: inline-block;
-    padding: 0.2rem 0.5rem;
-    background: var(--color-border);
+    padding: 0.2rem 0.625rem;
     font-family: var(--font-mono);
     font-size: 0.6875rem;
     letter-spacing: 0.02em;
-    color: var(--color-stone);
-    border-radius: 4px;
+    color: var(--color-electric);
+    background: color-mix(in srgb, var(--color-electric) 10%, transparent);
+    border-radius: 2rem;
   }
 
   .thought-date {
@@ -163,25 +180,21 @@ function parseTags(tags: string | null): string[] {
     color: var(--color-stone);
   }
 
-  .empty-block {
-    grid-column: 1 / -1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 200px;
+  .thought-empty {
+    text-align: center;
+    padding: 4rem 0;
   }
 
-  .empty-block p {
+  .thought-empty .thought-text {
     font-family: var(--font-mono);
-    font-size: 0.8125rem;
+    font-size: 0.875rem;
     color: var(--color-stone);
-    margin: 0;
   }
 
-  @keyframes blockIn {
+  @keyframes thoughtIn {
     from {
       opacity: 0;
-      transform: translateY(12px);
+      transform: translateY(16px);
     }
     to {
       opacity: 1;
@@ -190,12 +203,20 @@ function parseTags(tags: string | null): string[] {
   }
 
   @media (max-width: 640px) {
-    .block-grid {
-      grid-template-columns: 1fr;
+    .thoughts-page {
+      padding: 0 1.25rem 4rem;
     }
 
-    .block-header {
-      padding: 2rem 1.5rem;
+    .thoughts-header {
+      padding: 2rem 0 3rem;
+    }
+
+    .thought-big .thought-text {
+      font-size: clamp(1.5rem, 6vw, 2rem);
+    }
+
+    .thought {
+      padding: 1.5rem 0;
     }
   }
 </style>

@@ -709,32 +709,39 @@ while (vibeIdx < vibes.length) {
       display: none;
     }
 
+    /* Safe padding for all blocks — nav at top, progress bar at bottom */
+    .river-block {
+      padding-top: 4rem;
+      padding-bottom: 1.5rem;
+      box-sizing: border-box;
+    }
+
     /* Force photo blocks to be wide on mobile */
     .photo-block {
       min-width: 92vw !important;
       width: 92vw !important;
     }
 
-    /* Force photo frames to fill their block and be tall */
+    /* Photo frames fill block but leave room for nav/chrome */
     .photo-frame {
       width: 100% !important;
-      height: 75vh !important;
+      height: 65vh !important;
     }
 
     .photo-block[data-py="top"] .photo-frame,
     .photo-block[data-py="bottom"] .photo-frame {
-      height: 70vh !important;
+      height: 60vh !important;
     }
 
     .photo-caption {
       font-size: 0.625rem;
     }
 
-    /* Text blocks on mobile */
+    /* Text blocks on mobile — generous safe padding */
     .text-block {
       min-width: 85vw !important;
       width: 85vw !important;
-      padding: 3vh 6vw;
+      padding: 5rem 6vw 3rem !important;
     }
 
     .text-block[data-size="large"] .wall-text {
@@ -743,6 +750,11 @@ while (vibeIdx < vibes.length) {
 
     .text-block[data-size="medium"] .wall-text {
       font-size: clamp(1.125rem, 5vw, 1.5rem);
+    }
+
+    /* Hero block doesn't need top padding — image covers it */
+    .hero-block {
+      padding-top: 0;
     }
 
     .closing-block {

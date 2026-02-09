@@ -2,12 +2,12 @@
 import '../styles/global.css';
 import { getThoughts, getProfile } from '../lib/db-static';
 import { getTrips } from '../lib/photography-static';
-import { getStories } from '../lib/db-static';
+import { getSubstackPosts } from '../lib/substack';
 
 const profile = getProfile();
 const thoughts = getThoughts(10);
 const trips = getTrips();
-const stories = getStories();
+const substackPosts = await getSubstackPosts();
 
 function formatDate(dateString: string): string {
   return new Date(dateString).toLocaleDateString('en-AU', {
@@ -153,25 +153,28 @@ function parseTags(tags: string | null): string[] {
           <h2 class="panel-title gradient-text">Stories</h2>
         </div>
         <div class="cards-track">
-          {stories.length > 0 ? (
-            stories.map((story) => (
-              <a href={`/stories/${story.slug}`} class="card story-card">
-                {story.cover_image_url && (
+          {substackPosts.length > 0 ? (
+            substackPosts.slice(0, 6).map((post) => (
+              <a href={post.link} target="_blank" rel="noopener noreferrer" class="card story-card">
+                {post.image && (
                   <div class="card-image">
-                    <img src={story.cover_image_url} alt={story.title} loading="lazy" />
+                    <img src={post.image} alt={post.title} loading="lazy" />
                   </div>
                 )}
                 <div class="card-info">
-                  <h3 class="card-title">{story.title}</h3>
-                  {story.published_at && (
-                    <time class="card-date">{formatDate(story.published_at)}</time>
+                  <h3 class="card-title">{post.title}</h3>
+                  {post.excerpt && (
+                    <p class="card-body">{post.excerpt}</p>
+                  )}
+                  {post.date && (
+                    <time class="card-date">{formatDate(post.date)}</time>
                   )}
                 </div>
               </a>
             ))
           ) : (
             <div class="empty-card">
-              <p>Stories coming soon.</p>
+              <p>Stories live on <a href="https://substack.com/@scttee" target="_blank" rel="noopener noreferrer" style="color: var(--color-hot); text-decoration: none;">Substack</a></p>
             </div>
           )}
           <a href="/stories" class="card view-all-card">
@@ -201,7 +204,7 @@ function parseTags(tags: string | null): string[] {
               <a href="mailto:scottshirbin@gmail.com" class="about-link about-link-primary">Say hello &rarr;</a>
               <a href="/adventures" class="about-link">Adventures</a>
               <a href="/thoughts" class="about-link">Thoughts</a>
-              <a href="/archive" class="about-link">Archive</a>
+              <a href="/stories" class="about-link">Stories</a>
             </div>
           </div>
         </div>
